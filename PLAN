@@ -1,0 +1,67 @@
+Oppbygging:
+tre klasser: 
+	- Sensor - egen inputklasse, som overfører verdier i innklassa til neurale signal (frekvensdomene).
+	- Neurode- neuro node. Kalkulerende node.
+	- Output - egen outputklasse, som overfører tilbake til normalt domene.
+
+
+
+
+Rydd opp i dette Når du er tanketreig:
+	- lag default terskel på neuron. Alle (eller explisitt ikkje) har denne terskelen. Input-neuron har andre lover/regler.
+
+
+	- lag synapse-klasse ( innSynapse? ) slik at trening kan skje med egne klasser, og bruk kan lages egene klasser for (som er optimaliserte, og ikkje synapse-plastisk)
+
+
+
+
+
+	-har laga litt skjelett til neuronett, men driver fortsatt med design:
+		-> neuron skal ha private mdl. terskel 
+				- og kanskje kurvebratthet/ [øvre/nedre - terskel]
+		input-neuron skal da ha egene fyringsregler, for å fyre når "sensoren" blir aktivert.
+		
+	- egene negative koblinger, eller at alle neuron (synapser) har både eksiterende og inhibiterende egenskap?
+
+
+
+LÆRING:
+
+umiddelbar læring. 
+		- Dersom exitatorisk synapse-signal, og postsyn. fyrer. så: forsterket vekt.
+		- Dersom inhibitorisk synapseSignal, og postsyn. ikkje fyrer, så: forsterket (negativ) vekt
+			-> korleis? Etter tidsperiode? Fordele negativ vekt-forsterking utover de som bidro negativ?
+		
+		-> For å få passiv stabilisering, så skal alle nerme seg null forsterking kvar iterasjon, og samtidig bli forsterka om de har innvirkning.
+			-> legg inn at den tilnermer seg en konstant, istendenfor. (som i utg.pkt. er null). Sjå under for videre plan.
+
+Overordna læring:
+	Korleis er det med dette i det store bildet? Har denne "overordna" tilnerminga til null, en anna faktor? kanskje den isteden tilnermer seg en anna konstant, basert 
+	på output fra eit overordna styresystem, som kan sjå om resultatet er rett, eller galt.
+
+ 
+
+
+
+Læringsplan - Dag II :
+
+output fra neuron blir lagra / forrigeSignal-i synapse blir endra til å være output fra forrige neuron.
+
+Når en iterasjon er ferdig, så starter "lærings-iterasjonen", som går gjennom neurona, "nedenfra og opp", eller bakafra, og fram. (begynner på output-neuron,
+	og fortsetter mot input-neuron.) Heile veien med ei formeining om korleis det "burde være" heile veien. Vektinga på "feilheten" eller "rettheten" i kva kvar synapse
+	bidro med skal "bli spredt" utover treet som bidro til denne avgjersla. Slik får det som er sterkt med på endringa, mykje vektendring, og de som er mindre med, mindre
+	vektendring (Med ei maksimal vektendring, for å ikkje gjøre for store hopp i output-neuron).
+	
+På denne måten er det mulig med eit overordna læringssystem for neuroNettet. Dette læringsystemet kan for eksempel angi kva som skal belønnes/straffes (om eit utfall skal straffes
+eller belønnes (fra output og heile veien oppover mot input). Det skal også angi kor sterkt utfallet skal straffes/belønnes. (ikkje boolsk, men med vekt. Såleis variabel belønning
+utfra kor rett resultatet var.)
+
+Kjør det over, med manuell belønning. Dersom noke er     litt rett, så skriv 2, veldig rett, 8, heilt rett: 10, 
+						 	 litt feil,    skriv -2,veldig feil,-8, heilt feil:-10
+
+I første omgang kjør det over,  med respons betyende at akurat den samme inn mønster skal kjøres [tall] antall ganger. KORLEIS gjøre det med straff??
+I neste  omgang 		med respons gir vektendring på straff/belønning i "plan-dag II" - plan. 
+
+Legg til det som kroppen gjør ved høg fyring: slepp neuropeptid som trans.subst. Dette fører til endra postsyn. oppførsel. Ha dette i bakhodet.
+
