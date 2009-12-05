@@ -26,6 +26,7 @@ class neuroSensor : public neuron{
 	private:
 		unsigned int nFrekvens;
 		unsigned long ulForrigeTidspunkt; // for tidsSkilleElement, og frekvensutregning.
+		int nAntallRepitisjonerAvSignal;
 
 	protected: 
 		virtual int sigma_funk( double verdi ){ 
@@ -70,7 +71,8 @@ class neuroSensor : public neuron{
 	/* den kan:
 		- sjekkes av tidsSkilleElement : public synapse, og slikleis legges til på rett plass.. XXX Jess!
 	*/ 
-		neuroSensor( neuron* pN, double vekt, int nF, std::string navn ) : neuron(navn), nFrekvens(nF){ 
+		neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig) : 
+								neuron(navn), nFrekvens(nF), nAntallRepitisjonerAvSignal(antallSig) { 
 			leggTilSynapse( pN, vekt );	
 			
 			// "venter" tilfeldig tidsintervall:
@@ -83,11 +85,15 @@ class neuroSensor : public neuron{
 		}
 
 		void sjekkOmSkalFyres_ogFyr()
-		{
-			if(  ulTidsiterasjoner-ulForrigeTidspunkt >= nFrekvens ) /// XXX endre frekvens slik at den gir meir meining. t.d. > 1/frekv
-			{
-				fyr();
-				cout<<"fyrer " <<navn <<"\n";
+		{ 
+			if( nAntallRepitisjonerAvSignal >= 0 ){
+				nAntallRepitisjonerAvSignal --;
+
+				if(  ulTidsiterasjoner-ulForrigeTidspunkt >= nFrekvens ) /// XXX endre frekvens slik at den gir meir meining. t.d. > 1/frekv
+				{
+					fyr();
+					cout<<"fyrer " <<navn <<"\n";
+				}
 			}
 		}
 		void fyr()

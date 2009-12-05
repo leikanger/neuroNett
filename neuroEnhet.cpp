@@ -8,6 +8,9 @@ using std::list;
 // "Arbeidsliste" - bl.a. for å holde styr på tid.
 list<synapse*> pNesteSynapseUtregningsKoe;
 
+// Historieliste  - holder styr på historia til arbeidet (lista over)
+list<arbeidsHistorieElement*> pArbeidsHistorieListe;
+
 // alle frekvensstyrte neurosensore. Skal kontrolleres (i likhet med anna frekvensstyring) i tidsSkilleElement
 list<neuroSensor*> pNeuroSensorListe;
 
@@ -66,8 +69,8 @@ std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 
 std::ostream & operator<< (std::ostream & ut, synapse synArg )
 {
-	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<" med vekt " <<synArg.synaptiskSignal 
-		<<"    Antall syn.vesicles att: " <<synArg.dProsentSynapticVesiclesAtt <<std::endl;
+	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<" med vekt " <<synArg.synaptiskVekt 
+		<<"    Antall syn.vesicles att: " <<synArg.ulAntallSynapticVesiclesAtt <<std::endl;
 	return ut;
 }
 

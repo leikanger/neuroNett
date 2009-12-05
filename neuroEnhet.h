@@ -30,7 +30,7 @@ Kladd:
 
 using std::list;
 using std::cout;
-
+using std::endl;
 
 #define cDebug std::cerr
 
@@ -38,11 +38,13 @@ using std::cout;
 
 #define DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON 0.95 // for eksempel..         (ganger med denne faktoren per klokketikk) 
 
-#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES  5
-#define DEF_OVERFOERINGSFAKTOR_FOR_SYN   0.1
+#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES 	5
+#define DEF_OVERFOERINGSFAKTOR_FOR_SYN   	0.1
+#define DEF_startANTALL_SYN_V 		    	1000
 
 #define REFRACTION_PERIOD_TID_ITER 2
 
+#define LTP_HASTIGHET_endringAvAntall_POSTSYN_RECEPTOR 2 // Ved LTP...
 /*
 #define KONST_FOR_LTP_OG_LTD_TIDSGRENSE 2
 #define KONST_FOR_LTP_LTD_ENDRING 	0.01
@@ -54,10 +56,12 @@ using std::cout;
 class synapse;
 class neuron;
 class neuroSensor;
+class arbeidsHistorieElement;
 
 // globale variabelDeklarasjoner:
 extern unsigned long ulTidsiterasjoner;
-extern list<synapse*> pNesteSynapseUtregningsKoe;
+extern list<synapse*> 		    pNesteSynapseUtregningsKoe;
+extern list<arbeidsHistorieElement*> pArbeidsHistorieListe;
 
 extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres her.
 
@@ -74,11 +78,7 @@ extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres
 class neuron {
 	private:
 		
-		// ta med timedelay? for å få meir likt biosys.  
-		// SLIK:
-		// Timestamp  
-			// A) For når eit signal kommer inn	
-			// B) For når den fyrer (for å implementere "refraction period")
+		// ta med timedelay (vha. timestamp) ? for å få meir likt biosys.  
 
 
 	protected:
@@ -242,8 +242,6 @@ class neuron {
 
 
 
-
-
 /**************************************************************************************************
 ***** TODO gjør slik at ladingsfarta for synaptic vesicles er bra. No går han rett opp over *******
 ***** 		til 113 (%). Uten provosering. Skal gå til 100. I tilfelle augmentation,    *******
@@ -267,23 +265,51 @@ class neuron {
  ******************************************************************************************************/
 class synapse {
 	private:
+		// overvåkinga skjer annen plass. Her skjer bare initiering (og kanskje vedlikehold).
+		void LTP(){
+			// XXX Finn ut korleis dette funker. Når du finner ut dette, publiser artikkel, og skriv om denne funskjonen.
+			
+			// Finn ut om vektendring er omvendt proposjonalt avhengig av tidsintervallet.
+		
+			// Veit ikkje korleis, men trur at effekta er at 
+			// 					- antall synaptic vesicles øker?
+			// 					- presyn. membran-areal øker
+			// 					- receptorer i posts. øker (veit at responsen til en bestemt mengde n.t. øker..)
+			
+
+
+			// Begynner med å implementere øking av dGlutamatReceptoreIPostsynMem.
+			dGlutamatReceptoreIPostsynMem += LTP_HASTIGHET_endringAvAntall_POSTSYN_RECEPTOR;
+
+		}
+
+
 		// endre dette slik at vektendring skjer vha. kontinuerlige (veldig små) vektendringer. :
 		//int antallIterasjonerSidenSistVektendring; // blir oppdatert i regnUtVerdi() og når vekt blir endra.
 		unsigned long ulTimestampForrigeSignal; // for LTP.
 
 		/*********** For synaptic short-term depression: ***********/
-		double dProsentSynapticVesiclesAtt; 	// For synaptic (short term) depression. Eller egentlig heile veien. Kontinuerlig var. av s.v. slepp.
-	 	double dOverfoeringsVariabelForSynapse; // Er variabel vha. LTP/LTD. Beskriver antall neuroreceptore i postsynaptisk membran.
-		double dOppladingsFartForSynVesicles; 	// Er variabel for å ta høgde for potentiation og augmentation..
-		// Trenger også en variabel for oppladingshastighet for synaptiske vesicles. Denne skal varieres ved potentiation/augmentation.
+		
+		// Desse er vedtatt som variable i neurolog-milø. (FAKTA):
+		unsigned long ulAntallSynapticVesiclesAtt; 		// -For synaptic (short term) depression. 
+	       									// Gjør også slepp av s.v. prosentvis (som eit diff-lign. sys.)
+	 	double dGlutamatReceptoreIPostsynMem;			// -Beskriver antall neuroReceptore i postsynaptisk membran.
+
+		// Følgande er variable ifølge mi tankerekke (HYPOTESE):
+		double dOppladingsFartForSynVesicles; 			// -Er variabel for å ta høgde for potentiation og augmentation..
+		unsigned long ulAntallSynV_setpunkt; 			// -For å variere antall syn.vesicles. Min teori om facilitation/ 
+										// augmentation / korttids potentiation.
+		//double dReproduksjonAvSynV; 		// -For å ha membranstørrelsen variabel.. Sjå (min teori). Trenger også mem. areal-var.
+		// 
 	public:
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
 		synapse(char c){ if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
 		synapse( neuron* pPreN_arg, neuron* pPostN_arg, double v ) : 
-				dProsentSynapticVesiclesAtt(100),
-				dOverfoeringsVariabelForSynapse(DEF_OVERFOERINGSFAKTOR_FOR_SYN),
+				ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
+				dGlutamatReceptoreIPostsynMem(DEF_OVERFOERINGSFAKTOR_FOR_SYN),
 				dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
-				pPreNode(pPreN_arg), pPostNode(pPostN_arg), synaptiskSignal(v)
+				ulAntallSynV_setpunkt 	     (DEF_startANTALL_SYN_V),
+				pPreNode(pPreN_arg), pPostNode(pPostN_arg), synaptiskVekt(v)
 		{ }
 
 		neuron* pPreNode;
@@ -292,12 +318,12 @@ class synapse {
 		// FINN på en måte å lage skille mellom eksiterende og inhibiterende synapser. Kanskje bool for eksitatorisk?
 		// Dette er viktig når eg begynner med læring / vektendring...
 		
-		double synaptiskSignal; 	// Denne er avhengig av / har betydning  :  vekt.
+		double synaptiskVekt; 	// Denne er avhengig av / har betydning  :  vekt.
 
 
 		// ikkje i bruk enda:
-		//double LTP_og_LTD; 	// for å legge til til signal (synaptiskSignal).
-				      	//   - er long-term men ikkje permanent. Når den blir permanent, føres det inn i variabelen over (synaptiskSignal).
+		//double LTP_og_LTD; 	// for å legge til til signal (synaptiskVekt).
+				      	//   - er long-term men ikkje permanent. Når den blir permanent, føres det inn i variabelen over (synaptiskVekt).
 					// Finn ut korleis LTD og LTP sletter kvarandre. Regner med at det er gradvis, og at eg kan bruke kontinuerlig uts.
 	
 
@@ -319,15 +345,13 @@ class synapse {
 			// 	begynner med variabel faktor-opplading av dProsentSynapticVesiclesAtt.
 				// - Det blir litt meir regnekrevande med %-vis opplading (loop): 
 					//for(unsigned int i=0; i<ulKlokketikkSidenForrigeFyring; i++ )
-			dProsentSynapticVesiclesAtt += dOppladingsFartForSynVesicles * ulKlokketikkSidenForrigeFyring -2 ; // har en tidsforsinkelse på 2
+			if( ulAntallSynapticVesiclesAtt < ulAntallSynV_setpunkt )
+				ulAntallSynapticVesiclesAtt += dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring -2) ; 
+												// har en tidsforsinkelse på 2
 
 			// Endre gro-raten. Denne skal ha treighet i seg (type syn. depression og potentiation/augmentation)
 		//	dOppladingsFartForSynVesicles =  XXX
 
-			/* Plan:
-				1) Lag eit timestamp for når dProsentSynapticVesiclesAtt går under en verdi, vent litt, og øk rate. Dårlig.
-				2) 
-			*/
 			
 		}
 
@@ -374,23 +398,35 @@ class synapse {
 			//    og lineær opplading av dProsentSynapticVesiclesAtt. Denne lineære oppladinga kan kanskje være en del av 
 				// den synaptiske plastisiteten.
 			
+			/*
+			 * XXX HAR Gått ut fra at det er konstant antall neurotransmittore inni syn.vesicles.
+			 * XXX 	Dette kan være feilaktig antagelse..
+			*/
+
+
+
 			/******* Synaptisk depression: ******/ //For å begrense signalet til presyn->maksSignal. Denne er for short-time synaptic depression.
 			oppdater();
 
 			// Signaloverføring er avhengig av antall receptorer for aktuelle neurotransmittor. Ganger med en variabel
 			// 	definert for synapse, og som kan variere med LTP/LTD.
-			// Altså LTP/LTD øker / minker dOverfoeringsVariabelForSynapse eller synaptiskSignal ? Trenger eg 2 ?
-			double dTempSynSignal = 0.1 * dProsentSynapticVesiclesAtt * dOverfoeringsVariabelForSynapse * synaptiskSignal; // eller synaptiskVekt
-					     // | f.eks. *0.1
+			
 
+			//
+			// Denne var double -> unsigned long. Har ikkje kompilert etter..
 
-			cout<<"Sender " <<dTempSynSignal <<" til " <<pPostNode->navn <<"\tAv tot. " <<dProsentSynapticVesiclesAtt  <<std::endl;
+			unsigned long ulTempSynSignal_antallSV = 0.1 * ulAntallSynapticVesiclesAtt * synaptiskVekt; // eller synaptiskVekt
+					     			// | f.eks. *0.1
+			
+			cout 	<<"Sender " <<ulTempSynSignal_antallSV <<" syn.V. til " <<pPostNode->navn 
+				<<"\tAv gjenverande " <<ulAntallSynapticVesiclesAtt 
+				<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt <<"\n";
 		
 			// og trekker fra de brukte syn.vesicles fra dProsentSynapticVesiclesAtt.
-			dProsentSynapticVesiclesAtt -= dTempSynSignal;
+			ulAntallSynapticVesiclesAtt -= ulTempSynSignal_antallSV;
 
 			/******* sender inn *******/ // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
-			if( pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( dTempSynSignal ) )
+			if( pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( ulTempSynSignal_antallSV * dGlutamatReceptoreIPostsynMem ) )
 			{
 				// postsyn. neuron fyrer. Legger til alle synapsene dets i FIFO arbeidskø:
 				//pPostNode->...
@@ -402,6 +438,35 @@ class synapse {
 		}		
 		friend std::ostream & operator<< (std::ostream & ut, synapse );
 };
+
+
+
+
+
+
+
+/*******************************************************************************************************
+ ********************    class arbeidsHistorieKoeElement                             *******************
+ ********************        - Element som inneholder synapse*, for å registrere     *******************
+ ********************          historie for utregning av neuralnett.                 *******************
+ ********************        - Skal kanskje også inneholde timestamp, og en måte     *******************
+ ********************          for å finne ut frekvensen eller noke. Tenk tenk.      *******************
+ ******************************************************************************************************/
+class arbeidsHistorieElement {
+	public:
+		arbeidsHistorieElement( synapse* pElement ) : arbeidsElement_synP(pElement), antallGangerBrukt(1) { }
+
+		synapse* arbeidsElement_synP;
+		int antallGangerBrukt;
+	 
+};
+
+
+
+
+
+
+
 
 /*******************************************************************************************************
  ********************    class tidsSkilleElement                                     *******************

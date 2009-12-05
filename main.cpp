@@ -79,11 +79,8 @@ Tenking rundt short-term plasticity:
 
 	neuron B("B"); neuron C("C");
 
-	neuroSensor sA( &B, 10, 2, "sA");
-	sA.leggTilSynapse( &C, 20 );
-
-	//neuroSensor sB( &B, 10, 4, "sB");	neuron C("C");
-	//neuroSensor sC( &C, 10  , 5, "sC"); 
+	neuroSensor sA( &B, 0.10, 2, "sA", 10);
+	//sA.leggTilSynapse( &C, 0.20 );
 
 
 
@@ -91,23 +88,45 @@ Tenking rundt short-term plasticity:
 
 	while( ulTidsiterasjoner<100/*0000*/ ){
 		if( pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : l.69\n\n"; exit(-1); }
-		
-		pNesteSynapseUtregningsKoe.front()->regnUt();
+	
+		synapse* pSynForste = pNesteSynapseUtregningsKoe.front();
 		pNesteSynapseUtregningsKoe.pop_front(); // tar vekk første element.
+		
+		pSynForste->regnUt();
+		
 
-//		if( ulTidsiterasjoner % 5000 == 0 ) cout<<"ulTidsiterasjoner:" <<ulTidsiterasjoner <<std::endl;
-		/*
-		for( vector<synapse*>::iterator i = sA.pUtSynapser.begin() ; i < sA.pUtSynapser.end(); i++ ){
-			static unsigned long tid = ulTidsiterasjoner;
-			if( ulTidsiterasjoner > tid ) cout <<*(*i);
-		}*/
+		arbeidsHistorieElement* pTempHistorieElement;
+		static bool bLagtTilIarbeidsHistorie;
+		// sjekker om den ligger i historie:
+		for( list<arbeidsHistorieElement*>::iterator i = pArbeidsHistorieListe.begin(); i != pArbeidsHistorieListe.end(); i++ ){
+		
+			bLagtTilIarbeidsHistorie = false;
+
+
+	 		if( (*i)->arbeidsElement_synP == pSynForste ){
+				
+				pTempHistorieElement = (*i);
+				pArbeidsHistorieListe.erase( i );
+				pArbeidsHistorieListe.push_front( pTempHistorieElement );
+				pArbeidsHistorieListe.front()->antallGangerBrukt++;
+				bLagtTilIarbeidsHistorie = true;
+
+				break;
+			}
+		}
+
+		if( !bLagtTilIarbeidsHistorie ){ pArbeidsHistorieListe.push_front( new arbeidsHistorieElement(pSynForste) ); 	}
+
 		
 		
  	}
 
+ 	cout<<"\nFerdig\nAktuelle synapser:\n";
 
+	for( list<arbeidsHistorieElement*>::iterator i = pArbeidsHistorieListe.begin() ; i != pArbeidsHistorieListe.end(); i++ ){
+	  	cout << (*i)->arbeidsElement_synP <<" er brukt " << (*i)->antallGangerBrukt <<" ganger. \n";
+	}
 
- 	cout<<"\nFerdig\n";
 	return 0;
 }
 
