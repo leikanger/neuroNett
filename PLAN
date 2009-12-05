@@ -65,3 +65,93 @@ I neste  omgang 		med respons gir vektendring på straff/belønning i "plan-dag 
 
 Legg til det som kroppen gjør ved høg fyring: slepp neuropeptid som trans.subst. Dette fører til endra postsyn. oppførsel. Ha dette i bakhodet.
 
+
+
+
+
+
+XXXXXXXXX TEORI for læring XXXXXXXXXXXXXXX
+
+Altså, dersom eg har forstått det rett: 
+
+Synaptic depression: lett, går rett å slett på at man kan gå tom for synaptic vesicles. Mi hypotese er at vi i tillegg har "vannsøyle-og-opning-effekt", dvs
+at kor mange synaptic vesicles som sleppes er proposjonal med totalt antall synaptic vesicles. 
+
+LTP: Long-term potentiation. Vedvarande vekt-øking som blir initiert på følgande vis:
+	- Ved at postsyn. neuron er sterkt depol etter eit signal gjennom synapsen (innen 1oo-5oo ms).
+	- Meir?
+		
+	Fra Neural Networks and Brain.. boka:
+	LTP is a use-dependent and sustained increase in synaptic strength that can be induced by brief periods of synaptic stimulation.
+	- vedvarande forhøgd synaptisk vekt som følge av brief trains of høg-frekvent elektrisk stimulering. 
+	- To effekter: meir transmitterrelease, meir transmitterEffekt på postsyn. receptorer.
+	
+	=> eg tviler litt på årsaksforholdet i boka. Boka sei at NMDA-kanalane opnes, og Ca strømmer inn, og initierer LTP (postsyn.) . 
+	Min hypotese er: (sett at Ca innhold blir merkbart mindre etter aksonspotensial)
+	Ca hindrer LTP, men det andre stoffet som sleppes inn gjennom NMDA-kanalane øker LTP. Dette siden LTP bare funker i ei viss tid etter at
+	presyn. har kommet med signal (tatt en del av Ca fra syn. cleft). Dette fører til at mindre Ca kommer inn gjennom NMDA-kanalane, og forholdet:
+	Ca<=>annaIon endres, slik at den LTP-økande effekten av annaIon minker.. Mulig, mulig!
+	Altså:  aksjonspotensial i presyn. slepper inn Ca, men ikkje det andre ionet som slepper gjennom NMDA-kanalane, og såleis endrer forholdstallet.
+		LTP endres med grunnlag i dette forholdet. Dette forholdet er også viktig ved LTD.
+
+
+	
+LTD: Long-term depression. Vedvarande vekt-minke som blir initiert på følgande vis:
+	
+	Fra neuronett-boka: 
+	To typer:
+	Heterosynaptisk LTD:
+		Lav presynaptisk aktivitet, men postsynaptisk neuron er sterkt aktivert. (Anna synapse er aktiv. Denne er ikkje. Hetero).
+	Homosynaptisk   LTD:
+		Presynaptisk neuron er sterkt aktivert, men postsynaptisk neuron bare har litt aktivitet. (synapsen er aktiv, og minker(samme s.Homo)
+	Ved at presyn. har hyppig fyring, men postsyn. ikkje har stor depolarisering (hetero) , eller ved at postsyn har masse fyring, men denne synapsen
+	stort sett er inaktiv(homo).
+
+	Dersom eg skal ta denne teorien inn i tidsplanet, og i umiddelbar effekter, vil eg oppsummere slik:
+		Dersom det kommer eit postsyn. signal, men denne synapsen ikkje har noke med det å gjøre, så skal litt LTD.
+		Dersom det kommer presyn. signal, men postsyn. neuron ikkje er sterkt depolarisert etter: bittelitt    LTD.
+
+
+ 	MIN HYPOTESE:
+		Sjå nederst på LTP. Det er mulig at forholdet mellom Ca og eit anna ion (X) er det som påvirker K-Q receptorene's respons til glutamat
+		  (postsyn. effekt av LTP/LTD). 
+		Når presyn. neuron får inn aksjonspotensial, endres dette forholdet (Ca drar inn i presyn. celle, og minker i s. cleft, men ikkje X).
+			Dette fører til at når NMDA-kanalane blir åpna, er forholdet X/Ca blir større. Og vi øker vekt (LTP).
+		Når presyn. ikkje fyrer, men postsyn gjør: Hetero LTD. 
+ 			Dette kan være pga. at forholdet X/Ca blir mindre, og synaptisk vekt minker.
+		Når presyn. neuron får inn masse aksjonspotensial, men ingen postsyn. depolarisering: homoLTD 
+			Trur ikkje dette skjer på postsynaptisk nivå, men i presynaptisk celle. Kanskje dette er grunnen til at LTP funker på to måter
+			(presyn slepper meir neurotransmittor, og postsyn øker effekta av neurotransmittor i K-Q receptore).
+
+		
+
+
+
+
+
+
+Min Hypotese funker med andre ord veldig bra:
+
+Ved LTP skjer to ting: økt neurotransmittor-slepp, og økt effekt per n.t. i postsyn.
+- økt n.t.-slepp pga. økt antall s.v., eller pga. økt presyn membran. Utleder seinare..
+- økt postsyn. effekt per n.t. i postsyn membran. Dette er en effekt av at forholdet X/Ca øker, og det gjør også synaptisk vekt.
+
+Ved LTD kan to ulike effekter skje:
+- hetero: synapsen er inaktiv, men postsyn fyrer en del. Dette kan være av samme grunn som over. X/Ca minker. Ca ødelegger litt for vektene i synapsen.
+- homo: Presyn. fyrer mykje, men postsyn. gjør ikkje. Postsynaptisk  XXXXXXXXX
+
+
+Ok: trenger å finne ut meir om grunnen til at meir transmittor-substans blir sluppet med LTP. Trur dette har tett knytting til HomoLTD. (finn ut!)
+Mulige årsaker:
+	- økt presyn. membran som resultat av mykje merging av synaptic vesicles. Dette fører til at s.v. kan merge på større område. Statistisk økt sjangse
+	for at s.v. merger med membran. Så vidt eg veit er det ingen mekanisme som 'trekker' de inn i membran, bare øker sannsynet for at de merger inn i 
+	membran. Husk det med spontan-eksitering av postsyn. spenning ved null aktivitet (grunnen til at de fant ut om syn.vesicles).
+		- dette kan også være årsaken til facilitation/augmentation/potentiation (i henholdsvis minkende grad).
+	- økt antall s.v. i presyn. celle. Dette kan være som resultat av høgare bruk av s.v. ved kvar fyring (sjå over). Det kan også være fordi setpunkt 
+	for ønska antall s.v. går opp etter tilbakemelding fra postsyn. celle. Denne kan gå ned etter homoLTD.
+
+
+
+
+
+
