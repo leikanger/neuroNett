@@ -250,17 +250,43 @@ class neuron {
 
 
 
+//  SKAL EG HA PRE- og POST- syn. læringseffekt? Eller er dette interresant bare vitenskapelig (årsak bak LTP).
+
+/*******************************************************************************************************
+ ********************   PLAN, LÆRING:                                                *******************
+ ********************                                                                *******************
+ ********************       - LTP :                                                  *******************
+ ********************           - øker synapsevekt.                                  *******************
+ ********************           - når skjer dette? Undersøk / tenk !                 *******************
+ ********************                                                                *******************
+ ********************       - HomoLTD :                                              *******************
+ ********************           ( Synapsen fyrer masse, men postsyn. er stille )     *******************
+ ********************           - Dette kan overføres til tidsplanet med å sei at    *******************
+ ********************               ved syn.sig. og ingen postsyn. sig. så           *******************
+ ********************               litt litt homoLTD (minker synapsevekt).          *******************      
+ ********************               ( og litt øking ved motsatt tilfelle )           *******************
+ ********************                                                                *******************
+ ********************       - HeteroLTD:                                             *******************
+ ********************           ( synapsen er stille, postsyn. neuron fyrer )        *******************
+ ********************           - sjekkes fra neuron. Når neuronet fyrer, skal den   *******************
+ ********************               sjekke om de som synapser inn til den har hatt   *******************
+ ********************               signal innen ei tidsgrense. Dersom det er over   *******************
+ ********************               grensa, skal LTD skje. Finn ut om det skal       *******************
+ ********************               graderes. Litt litt heteroLTD..                  *******************
+ ********************                                                                *******************
+ ********************       - Celledød????                                           *******************
+ ********************                                                                *******************
+*******************************************************************************************************/
 
 
 
 
-// Driver å endrer funksjon/grunnlag fra innSynapse til asynkron ut-synapse.
-// og dertil legg til funksjon for å sjekke om postsyn. neuron fyrer, og i så fall legg til i ei FIFO-arbeidsliste.
+
 
 /*******************************************************************************************************
  ********************    class synapse                                               *******************
- ********************        - input for neuron. ala biologiske neuron.              *******************
- ********************        - vektene (lavnivås læring) skal skje her.              *******************
+ ********************        - output fra neuron. ala biologiske neuron.             *******************
+ ********************        - LTP, LTD (lavnivås læring) skal skje her.             *******************
  ********************                                                                *******************
  ******************************************************************************************************/
 class synapse {

@@ -138,7 +138,7 @@ Ved LTP skjer to ting: økt neurotransmittor-slepp, og økt effekt per n.t. i po
 
 Ved LTD kan to ulike effekter skje:
 - hetero: synapsen er inaktiv, men postsyn fyrer en del. Dette kan være av samme grunn som over. X/Ca minker. Ca ødelegger litt for vektene i synapsen.
-- homo: Presyn. fyrer mykje, men postsyn. gjør ikkje. Postsynaptisk  XXXXXXXXX
+- homo: Presyn. fyrer mykje, men postsyn. gjør ikkje. Presynaptisk effekt?
 
 
 Ok: trenger å finne ut meir om grunnen til at meir transmittor-substans blir sluppet med LTP. Trur dette har tett knytting til HomoLTD. (finn ut!)
@@ -149,6 +149,128 @@ Mulige årsaker:
 		- dette kan også være årsaken til facilitation/augmentation/potentiation (i henholdsvis minkende grad).
 	- økt antall s.v. i presyn. celle. Dette kan være som resultat av høgare bruk av s.v. ved kvar fyring (sjå over). Det kan også være fordi setpunkt 
 	for ønska antall s.v. går opp etter tilbakemelding fra postsyn. celle. Denne kan gå ned etter homoLTD.
+
+
+Ok. Deler herved inn LT[P/D] i to årsaker: Presynaptisk og postsynaptisk:
+(basert på de to ulike effektene i LTD, vil eg også tru at desse er, bare med motsett forteikn, med i LTP).
+
+
+Mulige årsaker: 							Mulige årsaker:
+PREsynaptisk. 							** 	POSTsynaptisk 
+- Membran. Økande størrelse på membran vil føre til økt 	* 	(glutamat har større E effekt, lokalt på K-Q receptor)
+merging av s.v. Dette vil føre til økt membran, men ikkje 	* 	(denne opner opp for ion som depolariserer postsyn. celle)
+økt setpunkt for membran. Setpkt for membran kan settes ved 	* 	
+initiering av LPT av/når postsyn fyrer mens membranen er 	* 	- Kan være styrt av neuropeptid, som nettop kommer etter "trains of high frequency"
+større. Årsakane bak dette er enten gitt av  			* 	E input.
+av setpunkt for membranstørrelse, eller setpkt. for antall s.v. * 	- osv. Vanskelig å fundere ut noke bra med så lite kunnskap som eg har..
+- LTP kan også føre til økt settpkt for antall s.v. ved 	* 	
+kviletilstand. Siden den opner kanaler, som trulig fungerer 	* 	
+som vannsøyle-opning-i-bunn, er %-vis slepp av s.v. sansynlig. 	* 	
+								* 	
+- økt mengde transmittorsubstans i kvar synaptic vesicle. 	* 	
+(-) utvidelse av eksisterande kanaler (større opning for Ca) 	* 	
+(-) lettare å trenge gjennom membran.  				* 	
+- anna?
+
+
+
+
+****************************************************************
+Basert på dette skal eg IMPLEMENTERE modellen slik:
+- når neuron fyrer skal:
+	- neuron sende inn signal i alle postsyn. neuron, og få tilbakemelding om desse fyrer (endre til sterkt depolarisert?)
+		- I så fall skal LTP initieres (øke vekt litt).
+		- Dersom ikkje: homoLTD. Littegrann (minimal) vektminke. 
+	- neuron sjekker alle innsynapser, og sjekker timestamp oppmot no-tid. Dersom timestamps er veldig forskjellige, skal hetero-LTD minke synaptisk vekt
+	minimalt, kanskje "proposjonalt" (ulin funk som går i metning) med tidsavviket.
+
+
+
+
+
+
+
+* * * *********************************************************************************************** * * * * * 
+* * * *********************************************************************************************** * * * * * 
+Bare litt retningslaus tenking på korleis nervesystemet i oss fungerer:
+* * * *********************************************************************************************** * * * * * 
+* * * *********************************************************************************************** * * * * * 
+
+CELLEDØD:
+Apropos oppgroing av nervesystemet: Neuron har som alle andre celler i kroppen, ei bestemt levetid. 
+Derretter gjennomgår den programmert celledød:
+	- Korleis er det med tilkomsten av nye celler?
+	  - Kva effekt har dette på synaptiske vekter / hukommelse ? Dersom nye celler tilkommer, vil vel desse ikkje ha samme syn. vekter, og vi får effekt
+	      av minner som "fader vekk". Dette vil forøvrig også skje om nye neuron ikkje blir grodd.
+ 	  - Kva med de gamle signalbanene som dør ved cella. Vil nye alternative signalbaner tilkomme. Er neuronenes celledød en viktig funsjon i hjenas 
+	      funksjon. Kanskje dette er en årsak til at gjengroing blir hindra av oligodendrocytter.
+Dette siste poenget er kanskje bra: Neurons celledød er en viktig effekt for å holde hjerna dynamisk / i dynamisk aktivitet. Dette vil føre til at det 
+kontinuerlig vil dannes nye baner for signal i hjerna, og "nye ideer" vil formes ( på eit høgare nivå ). Dette har isåfall vert eit fortrinn i evolusjonen
+( det å være intellektuelt dynamisk, og at hjerna heile tida endres. Fuksjoner og baner som er i bruk, vil bli gjennforsterka på tross av den programmerte
+celledøden, mens inaktive signalbaner vil forvitre som resultat av denne effekta. Eg klarer ikkje å tenke ut ei anna forklaring på årsak for programmert 
+celledød.
+I eit evolusjonært perspektiv er det heller ikkje grunn til å leve lenge (lenger enn 40-50 år, eller noke). Dermed vil ikkje lang liv telle positivt i utvalg
+, og vidare vil ikkje neurons celledød telle negativt for utvalget. Dette fører etterkvart ( etter nokre mill. generasjoner ) til at det som er viktigt, og
+positivt i "evolusjons-spillet", etterkvart blir framtredande i rasen. En dynamisk hjerne blir dermed framtredende for menneske. Finner (nok?) dyr uten 
+denne oligodendrocytt-hindringa av reproduksjon av CNS. PNS har behov for å være i order, ikkje til like stor grad dynamisk, og vi har mulighet for 
+reproduksjon av axon. 
+** Har PNS-neuron programmert celledød? **
+
+
+FYRINGSMØNSTER:
+Eg vil tru at eit komplekst input vil generere eit tre av fyringer i neuralNettet. Eller kanskje heller ei busk, fra 1 meter og opp (mange input, mange 
+output). Sjå på greinene som om det var vannslanger. Dersom du tar bort en slange, vil det for ei stund renne mindre vann gjennom buska. Dersom buska 
+blir mykje brukt (det går mykje vatn gjennom), vil enkelte "greiner", eller vannslanger, øke i størrelse og meir vann vil passere i denne greina.
+Tilbake til neuron. Dersom eit neuron blir tatt ut av nettverket, vil det samme skje. Ved mykje bruk i ei spesiell retning (høgt "vanntrykk"), vil
+denne buskstrukturen få økte vekter / større dimensjon. Det vil bli lettere for eit signal å gå gjennom. Når enkeltneuron da dør, vil dette være med på å
+hindre att systemet divergerer (i vannsammenligninga: att hulla nederst i vannsøyla blir for store, og slepper ut alt vannet).
+Dette fører til at systemets synapsevekter (vannhull) kan gro mykje fortare (større LTP). Dette gjør at læring kan skje raskere. Dersom den hemmande effekta
+(homoLTD, heteroLTD, CELLEDØD) ikkje var like sterk, har vi tre alternativ:
+	- Gjøre ingen ting med det. Dette trur eg at fører til epilepsi. 
+	    Dersom gjennomsnittlige synaptiske output (vekt) fra neuron er større enn 1/[gj.s. antall ut-synapser], vil systemet føre til netto økt antall
+	    signal. Dersom dette er meir enn systema rundt klarer å ta imot, vil dette framstå som epilepsi.
+	    -Ei anna (temporær) løysing er at veldig mange synapser til bare eit neuron, og denne vil gå mot maksimalfrekvensen. Dette vil føre til at
+	    dette eine neuronet vil fyre med (1/refractionPeriod) Hz. Denne løysinga er temporær, fordi det etter ei stund vil føre til homoLTD i mange
+	    av synapsene som synapser til det. Vi ender dermed opp med ferre synapser. Dette vil kanskje også spre seg videre.
+	- Lavere læring. Dersom en divergens i vektene (sjå over) skal ungås, er lavere læring en mulig utsettelse/løsning av problemet. 
+	    Dette er ei løsning dersom LTD blir viktigare enn LTP (lavere LTP eller høgare LTD:)
+	- Dersom LTD økes, sitter vi igjen med raskere glømming av neural lærdom.
+Så dersom vi vil opprettholde læringsraten (dynamikken) i neuron over tid, uten å gjøre kunnskapen for temporær (høg LTD), vil distribuert celledød være ei 
+god løsning. Dersom eg har rett i mi hypotese, vil eg også tru at i enkelte deler av hjerna er det lite, eller ingen celledød. Eksempel på dette er 
+områder involvert i arbeidsminne (desse har nok andre mekanismer for dette), områder involvert i LANGtidshukommelse (områder i temporal lobe) 
+[ desse har treig læring, lang levetid. Dette kan implisere lav mortalitet (veldig sein læring, lav senking av vekter, stor treighet].
+Motsett eksempel vil involvere center i hjerna der vi trenger rask læring, men ikkje over veldig lang tid. Korttidshukommelse. Kanskje M1? 
+ 	=>   Finn ut av kva deler av hjerna som forsvinner fortast. Kanskje mitt eller andres masteremne.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+************* VIM *************
+For å lagre sessions i vim: (type tabs og heile greia..)
+set sessionoptions=blank,buffers,curdir,folds,help,resize,tabpages,winsize
+map <c-q> :mksession! ~/.vim/.session <cr>
+map <c-s> :source ~/.vim/.session <cr>
+
+
+
+
+
+
+
 
 
 
