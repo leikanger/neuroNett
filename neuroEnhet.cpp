@@ -69,7 +69,7 @@ std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 
 std::ostream & operator<< (std::ostream & ut, synapse synArg )
 {
-	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<" med vekt " <<synArg.synaptiskVekt 
+	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<" med vekt bestemt i postsyn mem. ikkje ferdig."  
 		<<"    Antall syn.vesicles att: " <<synArg.ulAntallSynapticVesiclesAtt <<std::endl;
 	return ut;
 }
@@ -103,5 +103,51 @@ void tidsSkilleElement::regnUt()
 		Anna..
 	*/
 }
+
+void synapse::regnUt()
+{
+	// Implementerer short-term depression ved å legge inn (int dProsentSynapticVesiclesAtt) i neuron-klassa og 
+	//    slepping av maksimalt synVesicles er proposjonalt med denne ( antall sluppetSynV < konst * dAntallSyn... )
+	//    og lineær opplading av dProsentSynapticVesiclesAtt. Denne lineære oppladinga kan kanskje være en del av 
+		// den synaptiske plastisiteten.
+	
+	/*
+	 * XXX HAR Gått ut fra at det er konstant antall neurotransmittore inni syn.vesicles.
+	 * XXX 	Dette kan være feilaktig antagelse..
+	*/
+
+
+
+	/******* Synaptisk depression: ******/ //For å begrense signalet til presyn->maksSignal. Denne er for short-time synaptic depression.
+	oppdater();
+
+	// Signaloverføring er avhengig av antall receptorer for aktuelle neurotransmittor. Ganger med en variabel
+	// 	definert for synapse, og som kan variere med LTP/LTD.
+	
+
+	//
+	// Denne var double -> unsigned long. Har ikkje kompilert etter..
+
+	unsigned long ulTempSynSignal_antallSV = 0.1 * ulAntallSynapticVesiclesAtt;
+						// | f.eks. *0.1
+	
+	cout 	<<"Sendte " <<ulTempSynSignal_antallSV <<" syn.V. til " <<pPostNode->navn 
+		<<"\tAv gjenverande " <<ulAntallSynapticVesiclesAtt 
+		<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt <<"\n";
+
+	// og trekker fra de brukte syn.vesicles fra dProsentSynapticVesiclesAtt.
+	ulAntallSynapticVesiclesAtt -= ulTempSynSignal_antallSV;
+
+	/******* sender inn *******/ // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
+	if( pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( ulTempSynSignal_antallSV * dGlutamatReceptoreIPostsynMem ) )
+	{
+		// postsyn. neuron fyrer. Legger til alle synapsene dets i FIFO arbeidskø:
+		//pPostNode->...
+		// NEI. Dette blir gjort inne i sendInnPo...()
+		//gjør noke anna her, da kanskje?
+	}
+
+	ulTimestampForrigeSignal = ulTidsiterasjoner;
+}		
 
 // vim:fdm=marker:fmr=//{,//} : fdl=3

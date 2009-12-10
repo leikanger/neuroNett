@@ -13,9 +13,6 @@ void testMain();
 //globale var.
 pthread_t sig_gen_traad;
 
-
-// prosedyrer:
-
 /**********************************************************
 ***   int initArbeidskoe()             			***
 ***    	  arg: 	    -           			***
@@ -77,16 +74,16 @@ Tenking rundt short-term plasticity:
 	//testMain();
 
 
-	neuron B("B"); neuron C("C");
+	neuron B("B"); 
 
-	neuroSensor sA( &B, 0.10, 2, "sA", 10);
+	neuroSensor sA( &B, 1, 2, "sA", 3);
 	//sA.leggTilSynapse( &C, 0.20 );
 
 
 
 
 
-	while( ulTidsiterasjoner<100/*0000*/ ){
+	while( ulTidsiterasjoner<30/*0000*/ ){
 		if( pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : l.69\n\n"; exit(-1); }
 	
 		synapse* pSynForste = pNesteSynapseUtregningsKoe.front();
@@ -153,4 +150,4 @@ void testMain()
 }
 
 
-// vim:fdm=marker:fmr=//{,//} :fdl=3
+// vim:fdm=marker:fmr=//{,//}
