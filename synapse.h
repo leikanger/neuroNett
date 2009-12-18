@@ -1,4 +1,4 @@
-
+//#include "main.h" TODO
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h> 	// for exit()
@@ -18,11 +18,14 @@ using std::endl;
 
 #define cDebug std::cerr
 
-#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES 	5
+#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES 	DEF_startANTALL_SYN_V*0.01
 #define DEF_OVERFOERINGSFAKTOR_FOR_SYN   	1
-#define DEF_startANTALL_SYN_V 		    	100
+#define DEF_startANTALL_SYN_V 		    	1000
 
-#define LTP_HASTIGHET_endringAvAntall_POSTSYN_RECEPTOR 2 // Ved LTP...
+#define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
+#define LTD_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.07 // Ved LTD...
+
+#define LTP_INITIALISERINGS_TERSKEL 			750 
 
 // klasse-deklarasjoner:
 class synapse;
@@ -45,27 +48,27 @@ extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres
 
 
 
-/**************************************************************************************************
-***** TODO gjør slik at ladingsfarta for synaptic vesicles er bra. No går han rett opp over *******
-***** 		til 113 (%). Uten provosering. Skal gå til 100. I tilfelle augmentation,    *******
-***** 		skal den gå over. XXX 							    *******
-**************************************************************************************************/
 
-
-
+/* ------------------------------------------------------------------------------------------------------
+ *  --------                           PLAN:                                                  -----------
+ *  --------  Gjør slik at ladingsfarta for synaptic vesicles er bra. No går han rett opp over-----------
+ *  --------      til 113 (%). Uten provosering. Skal gå til 100. I tilfelle augmentation,    -----------
+ *  --------      skal den gå over.                                                           -----------
+ *  -----------------------------------------------------------------------------------------------------*/
 
 
 
 /*******************************************************************************************************
- ********************    class synapse                                               *******************
+ ********************    class synapse                                               ******************* synapse( neuron*, neuron*, double v =DEF_OVER..);
  ********************        - output fra neuron. ala biologiske neuron.             *******************
  ********************        - LTP, LTD (lavnivås læring) skal skje her.             *******************
  ********************                                                                *******************
  ******************************************************************************************************/
 class synapse {
 	private:
+		const bool bInhibitorisk_effekt;
 		// overvåkinga skjer annen plass. Her skjer bare initiering (og kanskje vedlikehold).
-		void LTP(){
+		void LTP( int nVerdi){
 			// XXX Finn ut korleis dette funker. Når du finner ut dette, publiser artikkel, og skriv om denne funskjonen.
 			
 			// Finn ut om vektendring er omvendt proposjonalt avhengig av tidsintervallet.
@@ -78,13 +81,26 @@ class synapse {
 
 
 			// Begynner med å implementere øking av dGlutamatReceptoreIPostsynMem.
-			dGlutamatReceptoreIPostsynMem += LTP_HASTIGHET_endringAvAntall_POSTSYN_RECEPTOR;
+			// Vil lage en slags "sigama-funk for dette. også som arg: kor mykje den har økt nylig (type to input på rappen, med depolarisering
+			// på 88 og 92 % skal ikkje føre til to store hopp, men ... Eller skal det kanskje det? Dette viser at denne signalveien er viktig.
+			fGlutamatReceptoreIPostsynMem += (LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR * nVerdi/100) ; //Kvifor /100 ?
+			cout 	<<"**** * * LTP * * **** \t\t\t\t\t* * * * * LTP * * * * Øker med " 
+				<<LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR <<" * " <<nVerdi <<"% = "
+				<<LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR * nVerdi/100
+				<<" \tNye verdier er " <<fGlutamatReceptoreIPostsynMem <<" per synaptic vesicle.\t\t\t*" ;
 
 		}
 
+		void homoLTD(){
+	 		// Minker med vektene med litt litt litt.
+			// TODO Foreløpig er det konstant endring ved LTD. Gjør det til at det øker men påfølgende LTD ?
+			fGlutamatReceptoreIPostsynMem -= (LTD_hastighet_endringAvAntall_POSTSYN_RECEPTOR / 100);
+			cout<<"litt homoLTD. => minker vekta litt litt litt. \t\t\t\t\t\t\t\t\t\t*\n";
 
-		// endre dette slik at vektendring skjer vha. kontinuerlige (veldig små) vektendringer. :
-		//int antallIterasjonerSidenSistVektendring; // blir oppdatert i regnUtVerdi() og når vekt blir endra.
+			//if( uGlutamatReceptoreIPostsynMem == 0) døøø Fjærn synapsen, om den er forr lita vekt på.
+		}
+
+
 		unsigned long ulTimestampForrigeSignal; // for LTP.
 
 		/*********** For synaptic short-term depression: ***********/
@@ -92,37 +108,24 @@ class synapse {
 		// Desse er vedtatt som variable i neurolog-milø. (FAKTA):
 		unsigned long ulAntallSynapticVesiclesAtt; 		// -For synaptic (short term) depression. 
 	       									// Gjør også slepp av s.v. prosentvis (som eit diff-lign. sys.)
-	 	double dGlutamatReceptoreIPostsynMem;			// -Beskriver antall neuroReceptore i postsynaptisk membran.
-
+	 	float fGlutamatReceptoreIPostsynMem;				// -Beskriver antall neuroReceptore i postsynaptisk membran.
+		// Det finnes en uTotaltAntallReceptoreIPostsynNeuron_setpunkt; som skal være med å styre variabelen over, når postsyn fyrer.
+		
 		// Følgande er variable ifølge mi tankerekke (HYPOTESE):
 		double dOppladingsFartForSynVesicles; 			// -Er variabel for å ta høgde for potentiation og augmentation..
 		unsigned long ulAntallSynV_setpunkt; 			// -For å variere antall syn.vesicles. Min teori om facilitation/ 
 										// augmentation / korttids potentiation.
 		//double dReproduksjonAvSynV; 		// -For å ha membranstørrelsen variabel.. Sjå (min teori). Trenger også mem. areal-var.
-		// 
+	
 	public:
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
-		synapse(char c){ if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
-		synapse( neuron* pPreN_arg, neuron* pPostN_arg, double v =0 ) : 
-				ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
-				dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
-				ulAntallSynV_setpunkt 	     (DEF_startANTALL_SYN_V),
-				pPreNode(pPreN_arg), pPostNode(pPostN_arg)
-		{
-			// finn ut om andre måten:
-			//   dGlutamatReceptoreIPostsynMem = v : v ? DEF_OVERFOERINGSFAKTOR_FOR_SYN; eller noke
-			if( v )
-				dGlutamatReceptoreIPostsynMem = v;
-			else
-				dGlutamatReceptoreIPostsynMem = DEF_OVERFOERINGSFAKTOR_FOR_SYN;
-		}
+		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
+		synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float v =1 );
+		// Denne legger seg automagisk til i postsyn. si innsyn.liste, og presyn. utsyn. liste.
 
 		neuron* pPreNode;
 		neuron* pPostNode;
 
-		// FINN på en måte å lage skille mellom eksiterende og inhibiterende synapser. Kanskje bool for eksitatorisk?
-		// Dette er viktig når eg begynner med læring / vektendring...
-		
 
 		// ikkje i bruk enda:
 		//double LTP_og_LTD; 	// for å legge til til signal (synaptisk vekt).
@@ -148,11 +151,13 @@ class synapse {
 				// - Det blir litt meir regnekrevande med %-vis opplading (loop): 
 					//for(unsigned int i=0; i<ulKlokketikkSidenForrigeFyring; i++ )
 			if( ulAntallSynapticVesiclesAtt < ulAntallSynV_setpunkt )
-				ulAntallSynapticVesiclesAtt += dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring -2) ; 
-												// har en tidsforsinkelse på 2
-
+				ulAntallSynapticVesiclesAtt += dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) ; 
+				/// TODO kva om det er 100 siden forrige fyring. => 100 * oppladingsfart = alt for mykje..
+												// skal kanskje ha en tidsforsinkelse på 2, men dette buggy
+												//  eller vanskelig..
+			cout<<"Lader opp igjen synapse med " <<dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) <<" synaptic vesicles.\n";
 			// Endre gro-raten. Denne skal ha treighet i seg (type syn. depression og potentiation/augmentation)
-		//	dOppladingsFartForSynVesicles =  XXX
+		//	dOppladingsFartForSynVesicles =  ...
 
 			
 		}
@@ -174,13 +179,11 @@ class synapse {
 			}
  
 			// Sjekker LTD (om postsyn nylig ( innen 100 ms, siden ) har fyrt )
-			if( / * 0 < * /       (ulTidsiterasjoner - pPostNode->ulTimestampFyring) < KONST_FOR_LTP_OG_LTD_TIDSGRENSE ){
+			if(   (ulTidsiterasjoner - pPostNode->ulTimestampFyring) < KONST_FOR_LTP_OG_LTD_TIDSGRENSE ){
 				if( valg == 0 ){// når presyn kaller denne.
 						// Presyn fyrte, (når valg = 0)
 					// LTD:
 					LTP_og_LTD -= KONST_FOR_LTP_LTD_ENDRING;
-					// TODO Tenk meir på korleis lage til LTP og LTD. Skal også ta med høg-frekvens-over-ei-tid
-
 
 					// XXX Sjekk om den blir under en viss verdi. I så fall skal synapsta mellom neurona forsvinne.
 					// XXX Sjekk om den blir over  en viss verdi. I så fall skal det gro fram nye synapser mellom neurona.
@@ -193,11 +196,19 @@ class synapse {
 		}
 */ 
 		// trur ikkje eg trenger returverdi:
-		virtual void regnUt();
+		virtual void aktiviserOgRegnUt();
 	
+		void skrivUt(){ cout<<"tulleutskrift. test.\n"; /**this;*/ }
 		friend std::ostream & operator<< (std::ostream & ut, synapse );
 };
 
+
+/* *********************************************************************
+ * *****     Alternativ er å ha en bool som heiter inhibitorisk,   *****
+ * *****       og if(inhibitorisk) signal *= (-1);                 *****
+ * *****       Avhengig av kva som er raskest. (peikeroppslag (for *****
+ * *****       peiker-funk.),  eller if-setning)                   *****
+ * *********************************************************************/ 
 
 #ifndef NEURON
     #include "neuroEnhet.h"
@@ -220,7 +231,7 @@ class tidsSkilleElement : public synapse {
 		tidsSkilleElement() : synapse('t') { cout<<"\tinne i konstruktor\n"; }
 
 		// gjør heilt andre ting enn synapse. Heiter det samme pga overloading.
-		void regnUt(); // Utleda i neuroEnhet.cpp
+		void aktiviserOgRegnUt(); // Utleda i neuroEnhet.cpp
 };
 
 

@@ -20,7 +20,7 @@
 ****    Funksjon: Generering av input-mønster for asynk.  ****
 ****              neurale nett.                           ****
 ****    Skal sjekkes av egen tråd, og sende signal, om    ****
-****    det er på tide. (gitt av statisk frekvens, input..****
+****    det er på tide. (gitt av statisk frekvens, input..**** 		neuroSensor( neuron* pN, double vekt, int "frekvens", string navn, int antallSig) : 
 *************************************************************/
 class neuroSensor : public neuron{
 	private:
@@ -37,9 +37,10 @@ class neuroSensor : public neuron{
 */
 
 		// XXX  "vekt" er litt utdatert.. mange variable no.. FIX
-		neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig) : 
+		neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig =-1) : 
 								neuron(navn), nFrekvens(nF), nAntallRepitisjonerAvSignal(antallSig) { 
-			leggTilSynapse( pN, vekt );	
+			//før: leggTilSynapse( pN, vekt );   no:
+			synapse( this, pN, false, vekt ); 
 			
 			// "venter" tilfeldig tidsintervall:
 			if( ulTidsiterasjoner<100 ) ulTidsiterasjoner += rand()%10;
@@ -55,7 +56,7 @@ class neuroSensor : public neuron{
 
 		void sjekkOmSkalFyres_ogFyr()
 		{ 
-			if( (ulTidsiterasjoner-ulTimestampFyring) >= nFrekvens  	&&  	nAntallRepitisjonerAvSignal >= 0 ) 
+			if( (ulTidsiterasjoner-ulTimestampFyring) >= nFrekvens  	&&  	(nAntallRepitisjonerAvSignal != 0 )  )
 			{
 				fyr();
 				nAntallRepitisjonerAvSignal --;

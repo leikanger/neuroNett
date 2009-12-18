@@ -13,6 +13,13 @@ void testMain();
 //globale var.
 pthread_t sig_gen_traad;
 
+/**************************
+ *** 	Deklarasjoner:	***
+ **************************/
+void* arbeidsKoeArbeider(void*);
+
+
+
 /**********************************************************
 ***   int initArbeidskoe()             			***
 ***    	  arg: 	    -           			***
@@ -34,6 +41,7 @@ int initArbeidskoe()
 }
 
 
+
 /*******************************
 ***   int main()             ***
 ***       arg:      -        ***
@@ -45,7 +53,7 @@ int main()
 	srand( time(0) );
 
 
-/* XXX XXX XXX
+/*
 Tenking rundt short-term plasticity:
 	- Kvar fyring, så sleppes en mengde synaptic vesicles. 
 	- Det blir reprodusert seinare.
@@ -57,7 +65,7 @@ Tenking rundt short-term plasticity:
 
 	Dette er muligens bakgrunnen for potentiation og augmentation
 
-*/ /// XXX XXX
+*/ 
 
 
 
@@ -74,22 +82,43 @@ Tenking rundt short-term plasticity:
 	//testMain();
 
 
-	neuron B("B"); 
+	neuron D("D");
+	neuron C("C"); // C.leggTilSynapse(&D);
 
-	neuroSensor sA( &B, 1, 2, "sA", 3);
-	//sA.leggTilSynapse( &C, 0.20 );
+	
+	//neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig) : 
+	neuroSensor B( &C, 1, 1, "sB"); // B.leggTilSynapse(&C);
+	synapse sBD(&B, &C, true, 0.5 );
+	//synapse sCD(&C, &D);
+	
 
 
+	// funk. som er void* (void*) - funksjon	
+	arbeidsKoeArbeider(0);
 
 
+ 	cout<<"\nFerdig\nAktuelle synapser:\n";
 
-	while( ulTidsiterasjoner<30/*0000*/ ){
+	for( list<arbeidsHistorieElement*>::iterator i = pArbeidsHistorieListe.begin() ; i != pArbeidsHistorieListe.end(); i++ ){
+	  	cout <<((*i)->arbeidsElement_synP)  <<" er brukt " << (*i)->antallGangerBrukt <<" ganger. \n";
+	}
+
+	return 0;
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ * *   har ikkje gjort noke meir med denne. Dette låg i main før. Har plan om å lage en separat tråd som arbeider med arbeidskø.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ void* arbeidsKoeArbeider(void* ){
+
+	while( ulTidsiterasjoner<60 ){
 		if( pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : l.69\n\n"; exit(-1); }
 	
 		synapse* pSynForste = pNesteSynapseUtregningsKoe.front();
 		pNesteSynapseUtregningsKoe.pop_front(); // tar vekk første element.
 		
-		pSynForste->regnUt();
+		pSynForste->aktiviserOgRegnUt();
 		
 
 		arbeidsHistorieElement* pTempHistorieElement;
@@ -105,6 +134,7 @@ Tenking rundt short-term plasticity:
 				pTempHistorieElement = (*i);
 				pArbeidsHistorieListe.erase( i );
 				pArbeidsHistorieListe.push_front( pTempHistorieElement );
+
 				pArbeidsHistorieListe.front()->antallGangerBrukt++;
 				bLagtTilIarbeidsHistorie = true;
 
@@ -113,41 +143,22 @@ Tenking rundt short-term plasticity:
 		}
 
 		if( !bLagtTilIarbeidsHistorie ){ pArbeidsHistorieListe.push_front( new arbeidsHistorieElement(pSynForste) ); 	}
-
-		
-		
  	}
-
- 	cout<<"\nFerdig\nAktuelle synapser:\n";
-
-	for( list<arbeidsHistorieElement*>::iterator i = pArbeidsHistorieListe.begin() ; i != pArbeidsHistorieListe.end(); i++ ){
-	  	cout << (*i)->arbeidsElement_synP <<" er brukt " << (*i)->antallGangerBrukt <<" ganger. \n";
-	}
-
 	return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void testMain()
-{
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // vim:fdm=marker:fmr=//{,//}

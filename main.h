@@ -48,10 +48,10 @@ using std::vector;
 
 
 
-#define INPUT_TERSKEL 70
-#define INPUT_KURVEBRATTHET 14
+//#define INPUT_TERSKEL 70
+//#define INPUT_KURVEBRATTHET 14
 
-#define LAERINGSFART_KONST 0.05
+//#define LAERINGSFART_KONST 0.05
 
 
 

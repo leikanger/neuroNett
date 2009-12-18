@@ -1,3 +1,49 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************************************************************
+********                                                                                              ***********
+********      umiddelbar plan / kva eg holder på med akkurat no:                                      ***********
+********          Har gått over fra neuron.leggTilSynapse() til at synapse legger til peiker til      ***********
+********        seg sjølv i presyn og postsyn neuron sine synapselister.                              ***********
+********                                                                                              ***********
+********          Skal ordne det som er galt med neuron. No er det slik at uansett kor mange innsignal***********
+********        eg sender inn, så er den enten = 10 eller 0 neste iterasjon (og alltid). FIKS         ***********
+********                                                                                              ***********
+********          Driver å lager LTP vha. glutamat-receptorer. Postsyn. neuron har setpkt. for kor    ***********
+********        mange receptore som skal være totalt. Når den fyrer skal dette instilles rett.        ***********
+		I mellomtida skal det ordnes masse meir omtrentlig. Dersom den må hoppe over eit maks
+		hopp for å gå til setpkt, skal eit ny klasse for dette legges til sist i arbeidsliste
+		og det skal regnes ut på nytt...
+********                                                                                              ***********
+********          Har nettop lagt til uGlutamatReceptoreIPostsynMem som initiering i konstruktor. Legg***********
+********        til eit lite tall (en promille) som skal ganges med dette, for å få ca. 1 (faktor)    ***********
+********         Går over til å bruke float istadenfor unsigned. Ordne dette! 			      ***********
+********                                                                                              ***********
+********                                                                                              **********/
+
+
+
+
+
+
+
+
+
+
+
+
+
 Oppbygging:
 tre klasser: 
 	- Sensor - egen inputklasse, som overfører verdier i innklassa til neurale signal (frekvensdomene).
@@ -23,6 +69,32 @@ Rydd opp i dette Når du er tanketreig:
 		input-neuron skal da ha egene fyringsregler, for å fyre når "sensoren" blir aktivert.
 		
 	- egene negative koblinger, eller at alle neuron (synapser) har både eksiterende og inhibiterende egenskap?
+
+
+
+
+
+
+
+
+**********************************************************************************************************************************************
+Apropos nVerdiForDepolarisering: 
+Skal gjøre de 0-1000 istadenfor float?
+Kanskje 100.000?
+Lager float for now. Endrer kanskje til unsigned int etterkvart (optimalisering).
+*********************************************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -184,6 +256,40 @@ Basert på dette skal eg IMPLEMENTERE modellen slik:
 	- neuron sjekker alle innsynapser, og sjekker timestamp oppmot no-tid. Dersom timestamps er veldig forskjellige, skal hetero-LTD minke synaptisk vekt
 	minimalt, kanskje "proposjonalt" (ulin funk som går i metning) med tidsavviket.
 
+TODO TODO TODO TODO TODO
+Det er to effekter ved læring / vektendring som eg ikkje har tatt hensyn til enda
+	- STDP (spike time-dependent Plasticity)
+	- presynaptisk effekt ved LTP. Har begynnt litt med synaptic depression (av synaptic vesicle). Min teori: at setpkt endres, og så vidare..
+
+
+
+
+
+
+
+/*******************************************************************************************************
+ ********************       Kanskje antall receptore / [postsyn. effekt av n.t.]     *******************
+ ********************         er konstant? At det bare flyter rundt mellom synapsene.*******************
+ ********************         Men kan endres ved høg/lav fyringsfrekvens.            *******************
+ Med det meiner eg høgare/lavare enn en gitt egenfrekvens, så kan denne egensfrekvensen gradvis endres, og i tillegg at egenfrekvensen er med på å 
+ bestemme "konstanten" (antall receptore) ved å være proposjonal med 1/E.frekvens. Når vi har høg fyringsfrekvens, vil E.frekvens øke, og dermed konst.
+ antall receptore minke. Dette vil føre til stabilisering av synaptiske vekter. Nydelig. I tillegg må du huske at LTP/D er utforska for enkeltsynapser,
+ og ikkje neuron som heilhet. Denne flytende-men-konstant-globalt antalle receptore (postsyn. styrke) fører til at vi får effekter som passer godt, eller
+ vil føre til resultata for LTP og LTD.
+ ******************************************************************************************************/
+
+/* * * * * Med dette blir plan for læring: * * * * * * * 
+ *   - Variabel for antall glutamatreceptore-totalt i postsynaptisk neuron.
+ *    	- denne kan økes/minkes av frekvensen. Avhengig av om den er over eller under egenfrekvensen. Kanskje det er dette som skal være variabelen.
+ *   - Kvar synapse skal ha en variabel som utgjør kor mange promille av de totale glutamatreceptorane, syn. skal ha.
+ *   - ved oppdatering, eller ved bruk (avhengig av kor regnetungt systemet er) skal synaptisk vekt kalkuleres.
+ *   Dette fører til at synapsene kun trenger å ta hensyn til positiv LTP-effekt. (LTD skjer som resultat). 
+ *   Og læring kan skje på to nivå; synapsen kan øke i styrke, og neuron kan øke i frekvens. 
+ *
+ *   -Begynner med statisk E.frekvens.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
 
 
 
@@ -269,7 +375,11 @@ map <c-s> :source ~/.vim/.session <cr>
 
 
 
+a************************************
 
+endre double dGlutamatReceptoreIPostsynMem til unsigned int ***************
+
+**************************
 
 
 

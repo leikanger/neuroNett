@@ -29,33 +29,31 @@ unsigned long ulTidsiterasjoner = 0;
 ***   funksjonsdefinisjoner   ***
 ***                           ***
 ********************************/
-/* Dersom man driver med switching av to synapse-kø-peikere.
-void switchAktivArbeidsKoe_og_itererTid()
-{
-	// bytter aktiv kø, og sidekø:
-	
-	if( pAktivArbeidsKoe_synapseP == &arbeidsKoe_for_utregningAvNeuralnett_nesteSynapseP__A )
-	{
-		pAktivArbeidsKoe_synapseP = &arbeidsKoe_for_utregningAvNeuralnett_nesteSynapseP__B;
-	//	std::cout<<"pAktivArbeidsKoe_synapseP er no  B  \n";
-		pSideKoe_Inaktiv_synapseP = &arbeidsKoe_for_utregningAvNeuralnett_nesteSynapseP__A; 
-	}else{
-		pAktivArbeidsKoe_synapseP = &arbeidsKoe_for_utregningAvNeuralnett_nesteSynapseP__A;
-	//	std::cout<<"pAktivArbeidsKoe_synapseP er no  A  \n";
-		pSideKoe_Inaktiv_synapseP = &arbeidsKoe_for_utregningAvNeuralnett_nesteSynapseP__B; 
-	}
-
-
-	// Itererer tid ( ulTidsiterasjoner ):
-	
-	ulTidsiterasjoner ++;	
-}*/
 
 // hjelpefunskjon for konstruksjon av neuron:
-void neuron::leggTilSynapse( neuron* nyttUtNeuron, double vekt)
+//
+void neuron::leggTilSynapse( neuron* nyttUtNeuron, bool inhib_e, float vekt)
 { 
-	pUtSynapser.push_back( new synapse( this, nyttUtNeuron, vekt) ); 
+	cout<<"neuroEnhet.cpp l.37 IKKJE I BRUK LENGER\n";
+	exit(-1);
+	pUtSynapser.push_back( new synapse( this, nyttUtNeuron, inhib_e, vekt) ); 
 }
+
+
+// constructor:
+synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt /*=false*/, float v /*=1*/ ) :  // v er oppgitt i promille.
+		bInhibitorisk_effekt(argInhibitorisk_effekt),
+		ulTimestampForrigeSignal( ulTidsiterasjoner ),
+		ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
+	 	fGlutamatReceptoreIPostsynMem( v ),
+		dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
+		ulAntallSynV_setpunkt 	     (DEF_startANTALL_SYN_V),
+		pPreNode(pPreN_arg), pPostNode(pPostN_arg)
+{
+	pPreNode->pUtSynapser.push_back(  this );
+	pPostNode->pInnSynapser.push_back(this );
+}
+
 
 
 /***************************
@@ -69,13 +67,16 @@ std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 
 std::ostream & operator<< (std::ostream & ut, synapse synArg )
 {
-	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<" med vekt bestemt i postsyn mem. ikkje ferdig."  
+	std::string type;
+	if( synArg.bInhibitorisk_effekt ) type = "inhibitorisk"; else type="eksitatorisk";
+
+	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<"(" <<type <<") med vekt bestemt i postsyn mem. ikkje ferdig."  
 		<<"    Antall syn.vesicles att: " <<synArg.ulAntallSynapticVesiclesAtt <<std::endl;
 	return ut;
 }
 
 // Spesielle overlagra funksjonen i tidsSkilleElement: (alt som skal gjøres en gang per tidsiterasjon..)
-void tidsSkilleElement::regnUt()
+void tidsSkilleElement::aktiviserOgRegnUt()
 {
 	// legger meg til bakerst i arbeidskø. (for å holde på "iterasjoner" videre i arbeidskøa)
 	pNesteSynapseUtregningsKoe.push_back( this );
@@ -83,7 +84,9 @@ void tidsSkilleElement::regnUt()
 	ulTidsiterasjoner++;
 
 	// Evt andre ting...
-	cout<<"\t\t\t\t\t\t\tØker tid til:\t" <<ulTidsiterasjoner <<"\n";
+	cout<<"\n\t\t\t\t\t\t\tØker tid til:\t" <<ulTidsiterasjoner <<"\n";
+
+
 
 	// Sjekker om frekvens-output-sensore skal fyre.
 	for( list<neuroSensor*>::iterator i = pNeuroSensorListe.begin(); i != pNeuroSensorListe.end(); i++ ){
@@ -104,7 +107,7 @@ void tidsSkilleElement::regnUt()
 	*/
 }
 
-void synapse::regnUt()
+void synapse::aktiviserOgRegnUt()
 {
 	// Implementerer short-term depression ved å legge inn (int dProsentSynapticVesiclesAtt) i neuron-klassa og 
 	//    slepping av maksimalt synVesicles er proposjonalt med denne ( antall sluppetSynV < konst * dAntallSyn... )
@@ -123,31 +126,34 @@ void synapse::regnUt()
 
 	// Signaloverføring er avhengig av antall receptorer for aktuelle neurotransmittor. Ganger med en variabel
 	// 	definert for synapse, og som kan variere med LTP/LTD.
+
+	unsigned long ulTempSynSignal_antallSV = 0.07 * ulAntallSynapticVesiclesAtt;
+						//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (membranareal kan øke).
 	
+	cout 	<<" Sendte " <<ulTempSynSignal_antallSV <<" syn.V. " 
+		<<"\t(av gjenverande " <<ulAntallSynapticVesiclesAtt 
+	        <<")\t->  " <<pPostNode->navn 
+		<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt; //<<"\n";
+	if( bInhibitorisk_effekt ) cout<<" (inhibitorisk)\n"; else cout<<" (eksitatorisk)\n";
 
-	//
-	// Denne var double -> unsigned long. Har ikkje kompilert etter..
-
-	unsigned long ulTempSynSignal_antallSV = 0.1 * ulAntallSynapticVesiclesAtt;
-						// | f.eks. *0.1
-	
-	cout 	<<"Sendte " <<ulTempSynSignal_antallSV <<" syn.V. til " <<pPostNode->navn 
-		<<"\tAv gjenverande " <<ulAntallSynapticVesiclesAtt 
-		<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt <<"\n";
-
-	// og trekker fra de brukte syn.vesicles fra dProsentSynapticVesiclesAtt.
+	// og trekker fra de brukte syn.vesicles fra ulSynapticVesiclesAtt.
 	ulAntallSynapticVesiclesAtt -= ulTempSynSignal_antallSV;
 
-	/******* sender inn *******/ // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
-	if( pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( ulTempSynSignal_antallSV * dGlutamatReceptoreIPostsynMem ) )
-	{
-		// postsyn. neuron fyrer. Legger til alle synapsene dets i FIFO arbeidskø:
-		//pPostNode->...
-		// NEI. Dette blir gjort inne i sendInnPo...()
-		//gjør noke anna her, da kanskje?
-	}
-
+	/******* oppdaterer timestamp for tidspkt for signal ********/
 	ulTimestampForrigeSignal = ulTidsiterasjoner;
+
+	/******* sender inn *******/ // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
+	//int nPostsynDepolarisering;
+	// Sjekker om denne synapsen har inhibitorisk effekt, i såfall send inn negativt signal.
+	if( bInhibitorisk_effekt )
+	    //nPostsynDepolarisering = 							// arg rett under her er int.
+	        pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( (-1) * ulTempSynSignal_antallSV*fGlutamatReceptoreIPostsynMem );
+	else // ikkje inhibitorisk, fortsetter med eksitatorisk (pos. signal inn i postsyn. neuron).
+	    //nPostsynDepolarisering = 
+		pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( ulTempSynSignal_antallSV*fGlutamatReceptoreIPostsynMem );
+
+	// TODO gjør ferdig if-testen for LTP og homoLTD. ( if( nPostsynDepolarisering>?? ) LTP..
+	
 }		
 
 // vim:fdm=marker:fmr=//{,//} : fdl=3
