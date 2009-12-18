@@ -1,5 +1,13 @@
 
-
+/********************************************************************************************************************
+**********          UMIDDELBAR plan:  Skal implementere MA-filter for synapsene, slik at det er stor treig-**********
+**********                            het i systemet. Eller anna framgangsmåte..                           **********
+**********                            Problemet med MA-måten, er at det tar lang tid før den når maks      **********
+**********                            verdien dens. Kanskje det er bedre med sigma-funksjon? (med kva arg?)**********
+**********                            - Målet er stor treighet, men rask start av kurva, og sein utlading. **********
+**********                                                                                                 **********
+**********                            TENK TENK!                                                           **********
+********************************************************************************************************************/
 
 
 
@@ -17,58 +25,13 @@
 ********          Har gått over fra neuron.leggTilSynapse() til at synapse legger til peiker til      ***********
 ********        seg sjølv i presyn og postsyn neuron sine synapselister.                              ***********
 ********                                                                                              ***********
-********          Skal ordne det som er galt med neuron. No er det slik at uansett kor mange innsignal***********
-********        eg sender inn, så er den enten = 10 eller 0 neste iterasjon (og alltid). FIKS         ***********
-********                                                                                              ***********
 ********          Driver å lager LTP vha. glutamat-receptorer. Postsyn. neuron har setpkt. for kor    ***********
 ********        mange receptore som skal være totalt. Når den fyrer skal dette instilles rett.        ***********
 		I mellomtida skal det ordnes masse meir omtrentlig. Dersom den må hoppe over eit maks
 		hopp for å gå til setpkt, skal eit ny klasse for dette legges til sist i arbeidsliste
 		og det skal regnes ut på nytt...
 ********                                                                                              ***********
-********          Har nettop lagt til uGlutamatReceptoreIPostsynMem som initiering i konstruktor. Legg***********
-********        til eit lite tall (en promille) som skal ganges med dette, for å få ca. 1 (faktor)    ***********
-********         Går over til å bruke float istadenfor unsigned. Ordne dette! 			      ***********
-********                                                                                              ***********
 ********                                                                                              **********/
-
-
-
-
-
-
-
-
-
-
-
-
-
-Oppbygging:
-tre klasser: 
-	- Sensor - egen inputklasse, som overfører verdier i innklassa til neurale signal (frekvensdomene).
-	- Neurode- neuro node. Kalkulerende node.
-	- Output - egen outputklasse, som overfører tilbake til normalt domene.
-
-
-
-
-Rydd opp i dette Når du er tanketreig:
-	- lag default terskel på neuron. Alle (eller explisitt ikkje) har denne terskelen. Input-neuron har andre lover/regler.
-
-
-	- lag synapse-klasse ( innSynapse? ) slik at trening kan skje med egne klasser, og bruk kan lages egene klasser for (som er optimaliserte, og ikkje synapse-plastisk)
-
-
-
-
-
-	-har laga litt skjelett til neuronett, men driver fortsatt med design:
-		-> neuron skal ha private mdl. terskel 
-				- og kanskje kurvebratthet/ [øvre/nedre - terskel]
-		input-neuron skal da ha egene fyringsregler, for å fyre når "sensoren" blir aktivert.
-		
-	- egene negative koblinger, eller at alle neuron (synapser) har både eksiterende og inhibiterende egenskap?
 
 
 
@@ -374,12 +337,6 @@ map <c-s> :source ~/.vim/.session <cr>
 
 
 
-
-a************************************
-
-endre double dGlutamatReceptoreIPostsynMem til unsigned int ***************
-
-**************************
 
 
 

@@ -18,9 +18,11 @@ using std::endl;
 
 #define cDebug std::cerr
 
-#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES 	DEF_startANTALL_SYN_V*0.01
+//#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES 	DEF_startANTALL_SYN_V*0.01
 #define DEF_OVERFOERINGSFAKTOR_FOR_SYN   	1
 #define DEF_startANTALL_SYN_V 		    	1000
+#define DEF_OPPLADING_AV_S_V_DIVISOR 		35
+#define MAKS_OPPLADNINGSFART_FOR_S_V 		1000
 
 #define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
 #define LTD_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.07 // Ved LTD...
@@ -68,6 +70,12 @@ class synapse {
 	private:
 		const bool bInhibitorisk_effekt;
 		// overvåkinga skjer annen plass. Her skjer bare initiering (og kanskje vedlikehold).
+		
+		// uForrigeAntallSynapticV_slept
+		unsigned uAntallSynapticV_sluppet;
+		//XXX FINN MÅTE Å LAGE 5-6 ELEMENT-LANG MA-filter for systemtreighet. ???
+
+
 		void LTP( int nVerdi){
 			// XXX Finn ut korleis dette funker. Når du finner ut dette, publiser artikkel, og skriv om denne funskjonen.
 			
@@ -101,7 +109,82 @@ class synapse {
 		}
 
 
-		unsigned long ulTimestampForrigeSignal; // for LTP.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// oppdater() har feil. Innstiller seg i likevekt på rundt 700. Skal gå heile veien til 300, eller noke. OK
+// neste: skal ha litt meir treighet i systemet for opplading. Kanskje eit MA-filter med 5-6 ledd..
+
+
+
+
+
+
+
+
+		// Oppdaterer neuron for ny klokkeiterasjon: (lader opp igjen synaptic vesicles i synapse)
+		void oppdater()
+		{
+			// For synaptic depression. Når dProsentSynapticVesiclesAtt tømmes, skal signalet i synapse minke.
+
+			// JOBB: GJØR DENNE DYNAMISK. IKKJE BRUK DEFINES, MEN VARIABLER.
+			// 	- Skal ha en variabel for derivert antall syn.v. att. Altså gro-rate.
+			// 	- Skal øke dProsentSynapticVesiclesAtt med denne variabelen.
+			// 	- Skal endre gro-raten basert på mengde synaptic vesicles igjen. Lag en god regel her.
+
+			unsigned long ulKlokketikkSidenForrigeFyring = ulTidsiterasjoner - ulTimestampForrigeSignal     ;
+			
+			// 	begynner med variabel faktor-opplading av dProsentSynapticVesiclesAtt.
+				// - Det blir litt meir regnekrevande med %-vis opplading (loop): 
+					//for(unsigned int i=0; i<ulKlokketikkSidenForrigeFyring; i++ )
+			if( ulAntallSynapticVesiclesAtt < ulAntallSynV_setpunkt )
+				ulAntallSynapticVesiclesAtt += dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) ; 
+				/// XXX kva om det er 100 siden forrige fyring. => 100 * oppladingsfart = alt for mykje..
+												// skal kanskje ha en tidsforsinkelse på 2, men dette buggy
+												//  eller vanskelig..
+			//begynner uten MA-filter (bare eit ledd tilbake (=siste ledd) )
+			// Endre gro-raten. Denne skal ha treighet i seg (type syn. depression og potentiation/augmentation)
+			long ulTempDiff;
+			if( ( ulTempDiff = ulAntallSynV_setpunkt-ulAntallSynapticVesiclesAtt) > MAKS_OPPLADNINGSFART_FOR_S_V ){
+				ulTempDiff = MAKS_OPPLADNINGSFART_FOR_S_V;
+	 			// TTT XXX TODO ,og legg til oppdateringsjobb sist i arbeidsliste.
+			}
+ 			dOppladingsFartForSynVesicles = ulTempDiff / DEF_OPPLADING_AV_S_V_DIVISOR;
+			cout<<"-ulTempDiff: " <<ulTempDiff <<" (ulAntallSynapticVesiclesAtt-ulAntallSynV_setpunkt)" <<endl;
+			cout <<"-( " <<ulAntallSynapticVesiclesAtt <<", " <<ulAntallSynV_setpunkt <<" )\n";
+			//kanskje eg skal ha med anna effekt, som fører til ulineær kurve i utladinga i ovesvingen? isåfall lett å legge den her:
+			if( dOppladingsFartForSynVesicles < 0 ) dOppladingsFartForSynVesicles = 0;
+
+			//for å la facilitation "ebbe ut", kjører eg konstant "lekking" av syn.v.
+			ulAntallSynapticVesiclesAtt -= 1 ;
+
+
+			cout<<"Lader opp igjen synapse med " <<dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) <<" synaptic vesicles.\n";
+
+		}
+			
+
+		unsigned long ulTimestampForrigeSignal;
 
 		/*********** For synaptic short-term depression: ***********/
 		
@@ -135,32 +218,6 @@ class synapse {
 
 
 
-		// Oppdaterer neuron for ny klokkeiterasjon: (lader opp igjen synaptic vesicles i synapse)
-		void oppdater()
-		{
-			// For synaptic depression. Når dProsentSynapticVesiclesAtt tømmes, skal signalet i synapse minke.
-
-			// JOBB: GJØR DENNE DYNAMISK. IKKJE BRUK DEFINES, MEN VARIABLER.
-			// 	- Skal ha en variabel for derivert antall syn.v. att. Altså gro-rate.
-			// 	- Skal øke dProsentSynapticVesiclesAtt med denne variabelen.
-			// 	- Skal endre gro-raten basert på mengde synaptic vesicles igjen. Lag en god regel her.
-
-			unsigned long ulKlokketikkSidenForrigeFyring = ulTidsiterasjoner - ulTimestampForrigeSignal     ;
-			
-			// 	begynner med variabel faktor-opplading av dProsentSynapticVesiclesAtt.
-				// - Det blir litt meir regnekrevande med %-vis opplading (loop): 
-					//for(unsigned int i=0; i<ulKlokketikkSidenForrigeFyring; i++ )
-			if( ulAntallSynapticVesiclesAtt < ulAntallSynV_setpunkt )
-				ulAntallSynapticVesiclesAtt += dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) ; 
-				/// TODO kva om det er 100 siden forrige fyring. => 100 * oppladingsfart = alt for mykje..
-												// skal kanskje ha en tidsforsinkelse på 2, men dette buggy
-												//  eller vanskelig..
-			cout<<"Lader opp igjen synapse med " <<dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) <<" synaptic vesicles.\n";
-			// Endre gro-raten. Denne skal ha treighet i seg (type syn. depression og potentiation/augmentation)
-		//	dOppladingsFartForSynVesicles =  ...
-
-			
-		}
 
 
 
@@ -200,6 +257,7 @@ class synapse {
 	
 		void skrivUt(){ cout<<"tulleutskrift. test.\n"; /**this;*/ }
 		friend std::ostream & operator<< (std::ostream & ut, synapse );
+		friend std::ostream & operator<< (std::ostream & ut, neuron );
 };
 
 

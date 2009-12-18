@@ -46,7 +46,7 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 		ulTimestampForrigeSignal( ulTidsiterasjoner ),
 		ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
 	 	fGlutamatReceptoreIPostsynMem( v ),
-		dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
+		//dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
 		ulAntallSynV_setpunkt 	     (DEF_startANTALL_SYN_V),
 		pPreNode(pPreN_arg), pPostNode(pPostN_arg)
 {
@@ -61,7 +61,28 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 ***************************/
 std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 {
-	ut<<"| " <<neuroArg.getNavn() <<"  | ";
+	ut<<"| " <<neuroArg.getNavn() <<"  | verdi: " <<neuroArg.nVerdiForDepolarisering <<" |     Med utsynapser:\n";
+	
+
+
+	for( std::vector<synapse*>::iterator iter = neuroArg.pUtSynapser.begin(); iter != neuroArg.pUtSynapser.end(); iter++ ){
+		/* *********************************************************************
+		 * *****                                                           *****
+		 * *****               VEKK START:                                 *****
+		 * *********************************************************************/ 
+		//** VEKK:
+			(*iter)->oppdater();
+			// DENNE SKAL IKKJE VÆRE MED HER. FØKKER OPP en del sjekker, for tid XXX:
+			(*iter)->ulTimestampForrigeSignal = ulTidsiterasjoner;
+		//** STOPP 		(DETTE er bare noke er tar med mens eg driver å undersøker opplading av syn.vesicles...)
+		/* *********************************************************************
+		 * *****               VEKK SLUTT.                                 *****
+		 * *****                                                           *****
+		 * *********************************************************************/ 
+
+	 	ut<<"\t" << (*iter)->ulAntallSynapticVesiclesAtt <<" antall syn.vesicles att.  TIL " <<(*iter)->pPostNode->navn <<endl;
+	}
+
 	return ut;
 }
 
@@ -105,6 +126,11 @@ void tidsSkilleElement::aktiviserOgRegnUt()
 				
 		Anna..
 	*/
+
+	//BARE FOR Å TESTE OPPLADING AV HEILT UTLADD synaptic vesicle.
+	//if(ulTidsiterasjoner==55)
+	//pNeuroSensorListe.front()->fyr();
+	cout<<*pNeuroSensorListe.front() <<endl;
 }
 
 void synapse::aktiviserOgRegnUt()
@@ -127,33 +153,37 @@ void synapse::aktiviserOgRegnUt()
 	// Signaloverføring er avhengig av antall receptorer for aktuelle neurotransmittor. Ganger med en variabel
 	// 	definert for synapse, og som kan variere med LTP/LTD.
 
-	unsigned long ulTempSynSignal_antallSV = 0.07 * ulAntallSynapticVesiclesAtt;
-						//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (membranareal kan øke).
+	// slept - sluppet
+	uAntallSynapticV_sluppet = 0.07 * ulAntallSynapticVesiclesAtt;
+				//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (membranareal kan øke).
 	
-	cout 	<<" Sendte " <<ulTempSynSignal_antallSV <<" syn.V. " 
+	cout 	<<" Sendte " <<uAntallSynapticV_sluppet <<" syn.V. " 
 		<<"\t(av gjenverande " <<ulAntallSynapticVesiclesAtt 
 	        <<")\t->  " <<pPostNode->navn 
 		<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt; //<<"\n";
 	if( bInhibitorisk_effekt ) cout<<" (inhibitorisk)\n"; else cout<<" (eksitatorisk)\n";
 
-	// og trekker fra de brukte syn.vesicles fra ulSynapticVesiclesAtt.
-	ulAntallSynapticVesiclesAtt -= ulTempSynSignal_antallSV;
+	
 
-	/******* oppdaterer timestamp for tidspkt for signal ********/
-	ulTimestampForrigeSignal = ulTidsiterasjoner;
 
+	unsigned uTempPostsynEffekt = uAntallSynapticV_sluppet * fGlutamatReceptoreIPostsynMem;
 	/******* sender inn *******/ // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
-	//int nPostsynDepolarisering;
+	//int nPostsynDepolarisering; <-XXX for seinare fikling med LTP
 	// Sjekker om denne synapsen har inhibitorisk effekt, i såfall send inn negativt signal.
 	if( bInhibitorisk_effekt )
 	    //nPostsynDepolarisering = 							// arg rett under her er int.
-	        pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( (-1) * ulTempSynSignal_antallSV*fGlutamatReceptoreIPostsynMem );
+	        pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( (-1) * uTempPostsynEffekt	);
 	else // ikkje inhibitorisk, fortsetter med eksitatorisk (pos. signal inn i postsyn. neuron).
 	    //nPostsynDepolarisering = 
-		pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( ulTempSynSignal_antallSV*fGlutamatReceptoreIPostsynMem );
-
-	// TODO gjør ferdig if-testen for LTP og homoLTD. ( if( nPostsynDepolarisering>?? ) LTP..
+		pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal(        uTempPostsynEffekt );
 	
+	
+	// og trekker fra de brukte syn.vesicles fra ulSynapticVesiclesAtt.
+	ulAntallSynapticVesiclesAtt -= uAntallSynapticV_sluppet;
+
+
+	/******* oppdaterer timestamp for tidspkt for signal ********/
+	ulTimestampForrigeSignal = ulTidsiterasjoner;
 }		
 
 // vim:fdm=marker:fmr=//{,//} : fdl=3

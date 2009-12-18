@@ -87,8 +87,8 @@ Tenking rundt short-term plasticity:
 
 	
 	//neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig) : 
-	neuroSensor B( &C, 1, 1, "sB"); // B.leggTilSynapse(&C);
-	synapse sBD(&B, &C, true, 0.5 );
+	neuroSensor B( &C, 1, 1, "sB", 2); // B.leggTilSynapse(&C);
+	//synapse sBD(&B, &C, true, 0.5 );
 	//synapse sCD(&C, &D);
 	
 

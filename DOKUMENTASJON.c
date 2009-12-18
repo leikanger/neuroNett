@@ -77,7 +77,7 @@ global: - ulTidsiterasjoner : extern unsigned long
 	Tidspunkt iterert ved tidsSkilleElement . Sjå "TID" øverst i denne fila.
 
 
-Neuron:
+neuron:
 	Variabler:
 		- nVerdiForDepolarisering : int 		- protected 
 	       	Verdi foR depolarisering av neuron. Brukes til å kalkulere om neuron fyrer. 
@@ -110,7 +110,8 @@ Neuron:
 			Arg: 	void
 			retur: 	void
 			funksjon: 	Fører til at neuron fyrer. (For å indusere eit signal, foR tesing av neuron..)
-
+		
+		//XXX  fullfør dette.
 		virtual void kalkulerDegraderingAvVerdiPaaGrunnlagAvTimestampSidenSist( ) - protected - inIine
 		virtual int sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( int nInnsignalArg ) - protected - inIine
 		virtual int fyr() - protected - inIine
@@ -120,3 +121,63 @@ Neuron:
 	FRIEND:
 		class synapse
 		operator <<( , neuron)
+
+synapse:
+	Variabler:
+		- bInhibitorisk_effekt 	 	: 	const bool 	: 	private
+		konstant bool som blir initiert ved konstruering av synapse. Bestemmer om synapse er eksitatorisk eller inhibitorisk. Må initieres i constr.
+		Dersom denne er true, har synapsen inhibitorisk effekt.
+		
+		- ulTimestampForrigeSignal 	: 	unsigned long  	: 	private
+		Tids-signal foR oppdatering av synaptic vesicles, og også foR LTP/D.
+		
+		- ulSynapticVesiclesAtt 	: 	unsigned long 	: 	private
+	        u.long som holder styr på kor mange synaptic vesicles som er igjen i synapsen. Siden eg modellerer det som ei vansøyle/opning nedst,
+		er slepp av syn.vesicles avhengig av kor mange som er igjen. (prosentvis slepp) Dette gir også gradvis depression.
+
+		- fGlutamatReceptoreIPostsynMem : 	float 		: 	private
+		Effekt (postsyn. invirkning) ved kvar synaptic vesicle. Viktig element i langtids plastisitet i synapsene. Spesielt LTP og heteroLTD.
+
+		- dOppladingsFartForSynVesicles : 	double  	: 	private
+		Mi hypotese: dersom mi hypotese stemmer, så skal det være litt treighet i systemet foR oppladning av synaptic vesicles. Dette gjør eg ved
+		å bruke forrige iterasjons oppladningsfart (eller FIRvariant). Dette gjør at vi får oversving av synaptic vesicles. Dette fører også til
+	        potentiation.
+		/*TODO*/ Dette er ikkje implementert enda /**/	
+
+		- ulAntallSynV_setpunkt 	: 	unsigned long 	: 	private
+		Mi hypotese: I stadenfor at effekta over står åleine, kan vi innføre variabelt setpunkt foR antall synaptic vesicles. Denne kan økes når:
+		presyn.terminal over tid har lite synaptic vesicles. || når presyn.term. har lite s.v. , og postsyn. er sterkt depol || anna?
+		Dette kan bidra til lengre tids augentation. Og kanskje litt på LTP (på hetero-måten).
+
+		
+		- pPreNode 			: 	neuron*  	:  	public
+		- pPostNode 	 	 	: 	neuron* 	:  	public
+		Peiker til neurona som ligger før og etter synapsen.
+
+
+	Funksjoner:
+		synapse(char c) : bInhibitorisk_effekt(false)  	: 	constructor 	:  	public
+		synapse( neuron* pPreN, neuron* pPostN, bool argInhib =0, float v =1) 	: 	public
+ 		arg:        fra-neuron,     til-neuron, inhibitorisk??? , glutamatreceptore
+		Gjør standard konstruktorgreier, men i tillegg legger den synapse* til seg sjølv til, i presyn. si pUtSynapser-liste, og i postsyn. si 
+		pInnSynapser-liste. På denne måten holder den automagisk rede på neuron. 
+		/*TODO*/Lag destructor, som gjør tilsvarende foR ødelegginga av synapser./**/
+
+
+		void oppdater() 		: 	void (void) 	: 	private
+		Funksjon foR opplading av synaptic vesicles. Dette er basert avvik mellom timestamp, og ulTidsiterasjoner. 
+		Trur eg skal begynne med å ha litt treighet i systemet, enten med en timedelay på 1 (bruke verdien som var regna ut i forrige iterasjon),
+		eller ved å implementere eit enkelt MA(moving average)-filter. Dette foR å legge opp til facilitation. /*XXX*/
+
+		virtual void aktiviserOgRegnUt() : 	virtual void(void) : 	public
+		Hovedfunskjon som kalles fra eksternt. Grunnen til at den er virtual, er at den overlagres i arva klasse (tidsSkilleElement).
+		Det er her hovedfunksjonen til synapse regnes ut, som kalkulering av antall syn.v. som skal sleppes, kor mange som er igjen, om effekta er
+		eksitatorisk eller inhibitorisk, oppdatering av antall s.v., osv.
+
+		void LTP( int nVerdi) 					: 	private
+		void homoLTD() 						: 	private
+	FRIEND:
+	        operator<<( , synapse )
+
+tidsSkilleElement : public synapse
+	
