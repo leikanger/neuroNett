@@ -23,6 +23,8 @@ using std::endl;
 #define DEF_startANTALL_SYN_V 		    	1000
 #define DEF_OPPLADING_AV_S_V_DIVISOR 		35
 #define MAKS_OPPLADNINGSFART_FOR_S_V 		1000
+#define OPPDATERINGS_GRENSE_SYN_V 		15 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
+					//XXX skalværeMeir
 
 #define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
 #define LTD_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.07 // Ved LTD...
@@ -40,7 +42,7 @@ class arbeidsHistorieElement;
 /* Extern-deklarasjoner */
 extern unsigned long ulTidsiterasjoner;
 
-extern list<synapse*> 		    pNesteSynapseUtregningsKoe;
+//extern list<synapse*> 		    pNesteSynapseUtregningsKoe;
 extern list<arbeidsHistorieElement*> pArbeidsHistorieListe;
 
 extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres her.
@@ -72,7 +74,7 @@ class synapse {
 		// overvåkinga skjer annen plass. Her skjer bare initiering (og kanskje vedlikehold).
 		
 		// uForrigeAntallSynapticV_slept
-		unsigned uAntallSynapticV_sluppet;
+		unsigned uAntallSynapticV_sluppet; // Er denne i bruk? XXX
 		//XXX FINN MÅTE Å LAGE 5-6 ELEMENT-LANG MA-filter for systemtreighet. ???
 
 
@@ -110,59 +112,112 @@ class synapse {
 
 
 
+		unsigned long ulTimestampForrigeSignal;
+		unsigned long ulTimestampForrigeOppdatering; /// Hovedsaklig for å unngå å oppdatere fleire ganger kvar iterasjon..
+
+		/*********** For synaptic short-term depression: ***********/
+		
+		// Desse er vedtatt som variable i neurolog-milø. (FAKTA):
+		unsigned long ulAntallSynapticVesiclesAtt; 		// -For synaptic (short term) depression. 
+	       									// Gjør også slepp av s.v. prosentvis (som eit diff-lign. sys.)
+		unsigned long ulSynapticVesicles_i_membran; 		// skal ha mulighet for å reproduseres.
+
+	 	float fGlutamatReceptoreIPostsynMem;				// -Beskriver antall neuroReceptore i postsynaptisk membran.
+		// Det finnes en uTotaltAntallReceptoreIPostsynNeuron_setpunkt; som skal være med å styre variabelen over, når postsyn fyrer.
+		
+		// Følgande er variable ifølge mi tankerekke (HYPOTESE):
+		double dOppladingsFartForSynVesicles; 			// -Er variabel for å ta høgde for potentiation og augmentation..
+		unsigned long ulAntallSynV_setpunkt; 			// -For å variere antall syn.vesicles. Min teori om facilitation/ 
+										// augmentation / korttids potentiation.
+		//double dReproduksjonAvSynV; 		// -For å ha membranstørrelsen variabel.. Sjå (min teori). Trenger også mem. areal-var.
+	
+	protected:
+	
+
+		// neste: skal ha litt meir treighet i systemet for opplading. Kanskje eit MA-filter med 5-6 ledd.. Eller membran-hypotesen, og regen.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// oppdater() har feil. Innstiller seg i likevekt på rundt 700. Skal gå heile veien til 300, eller noke. OK
-// neste: skal ha litt meir treighet i systemet for opplading. Kanskje eit MA-filter med 5-6 ledd..
-
-
-
-
-
-
-
-
+	
+		// oppdater() :
+		// 	arg: 	void
+		// 	retur: 	Returnerer 1 ved suksess. I arva klasser brukes det til annet (f.eks. i synSkilleElement betyr -47 retur at 
+		// 		  den er kalt i eit synSkilleElement. Dette har muliggjør : while( oppdateringskø.front()->oppdater() );
 		// Oppdaterer neuron for ny klokkeiterasjon: (lader opp igjen synaptic vesicles i synapse)
-		void oppdater()
+
+		virtual int oppdater()
 		{
+			cout<<"\tOPPDATER()\n";
+	
+			// Dersom den er kalt fra pNesteSynapseSomIkkjeErFerdigOppdatert_Koe (eller første element er denne..)
+			if( this == synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() ){
+				// så fjærner det første element fra oppdateringsliste:
+				synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
+			}		
+
+///XXX HER XXX
+			// Sjekker om den har oppdatert denne iterasjonen:
+			if( ulTimestampForrigeOppdatering == ulTidsiterasjoner ){
+	 			cout<<"\tXET503\t";
+	 			return 1; // eller kanskje noke anna. Bare ikkje 0 som returverdi.
+			}
+			
+
+		
+		
+		
 			// For synaptic depression. Når dProsentSynapticVesiclesAtt tømmes, skal signalet i synapse minke.
 
-			// JOBB: GJØR DENNE DYNAMISK. IKKJE BRUK DEFINES, MEN VARIABLER.
-			// 	- Skal ha en variabel for derivert antall syn.v. att. Altså gro-rate.
-			// 	- Skal øke dProsentSynapticVesiclesAtt med denne variabelen.
 			// 	- Skal endre gro-raten basert på mengde synaptic vesicles igjen. Lag en god regel her.
 
-			unsigned long ulKlokketikkSidenForrigeFyring = ulTidsiterasjoner - ulTimestampForrigeSignal     ;
+
+/* ******************************************************************************************************
+				No vil eg at den skal bare kjøre loopane, litt lenger ned, når den ikkje var i orden før pausa.
+				(dersom den er nådd referansepkt. før eit opphold i tid. )
+				* Kanskje det ikkje kan være opphold i tid, siden eg oppdaterer til den er oppdatert. Da er den klar..
+
+
+ * *********************************************************************************************************************************************************/ 
+
+		// 2 element i opplading av synaptic vesicles: syntese, reproduksjon, 
+			// TRENGER IKKJE loop: for(unsigned int i=0; i<ulKlokketikkSidenForrigeOppdateringTemp; i++ ){
+			// (dette er effekten eg prøver på gjennom kall fra synSkilleElement.oppdater()...)
+
+			// syntese av heilt nye S.V. reproduksjon skal skje seinare plass i koden. 	Veit ikkje om er så viktig med static - timedelay...
+			static int snForrigeSynteseAvSV = 0;
+			ulAntallSynapticVesiclesAtt += snForrigeSynteseAvSV;
+			// (dersom den er negativ, skal denne også sørge for å ta vekk litt syn. v.(sjå slutt av denne funk) )
+
+			// reproduksjon av S.V.
+			int nEndringImembranTemp = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
+			ulAntallSynapticVesiclesAtt  += nEndringImembranTemp;
+			ulSynapticVesicles_i_membran -= nEndringImembranTemp;
+
 			
-			// 	begynner med variabel faktor-opplading av dProsentSynapticVesiclesAtt.
-				// - Det blir litt meir regnekrevande med %-vis opplading (loop): 
-					//for(unsigned int i=0; i<ulKlokketikkSidenForrigeFyring; i++ )
-			if( ulAntallSynapticVesiclesAtt < ulAntallSynV_setpunkt )
-				ulAntallSynapticVesiclesAtt += dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) ; 
-				/// XXX kva om det er 100 siden forrige fyring. => 100 * oppladingsfart = alt for mykje..
-												// skal kanskje ha en tidsforsinkelse på 2, men dette buggy
-												//  eller vanskelig..
+			
+			cout 	<<"\n\t\tS.V. " <<ulAntallSynapticVesiclesAtt <<"\t| membran:\t" <<ulSynapticVesicles_i_membran
+				<<"\t(    " <<(int)(nEndringImembranTemp+((signed)ulAntallSynV_setpunkt-(signed)ulAntallSynapticVesiclesAtt)*0.05) <<" S.V.)"
+				<<"\t\t|=|  " <<nEndringImembranTemp <<" regen. og " 
+				<<snForrigeSynteseAvSV <<" er nye. \n"; 
+			cDebug<<"nEndringImembranTemp: " <<nEndringImembranTemp <<"     . ulAntallSynV_setpunkt: " <<ulAntallSynV_setpunkt 
+				<<"  . ulAntallSynapticVesiclesAtt: " <<ulAntallSynapticVesiclesAtt 	<<endl;
+
+			if( 		(ulSynapticVesicles_i_membran < 3*OPPDATERINGS_GRENSE_SYN_V)  	&& 
+					( abs(ulAntallSynV_setpunkt-ulAntallSynapticVesiclesAtt) < OPPDATERINGS_GRENSE_SYN_V )   ){
+	 			// nullstill avviket.
+				cout<<"\t\tFERDIG\n\n";
+				ulAntallSynapticVesiclesAtt = ulAntallSynV_setpunkt;
+				ulSynapticVesicles_i_membran = 0; /// ?? XXX Kanskje dette skal vekk, etterkvart.
+
+			}else{
+				cout<<"\t\tikkje ferdig.\n\n";
+	 			pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
+			}
+
+/* forenkla måte. Funker.			
 			//begynner uten MA-filter (bare eit ledd tilbake (=siste ledd) )
+			//MEINEINEI: skal ha membran-effekt istadenfor. treledds: synV-mem-førFabrikkOgIfabrikk tilbake til start..
+			//
 			// Endre gro-raten. Denne skal ha treighet i seg (type syn. depression og potentiation/augmentation)
 			long ulTempDiff;
 			if( ( ulTempDiff = ulAntallSynV_setpunkt-ulAntallSynapticVesiclesAtt) > MAKS_OPPLADNINGSFART_FOR_S_V ){
@@ -174,32 +229,23 @@ class synapse {
 			cout <<"-( " <<ulAntallSynapticVesiclesAtt <<", " <<ulAntallSynV_setpunkt <<" )\n";
 			//kanskje eg skal ha med anna effekt, som fører til ulineær kurve i utladinga i ovesvingen? isåfall lett å legge den her:
 			if( dOppladingsFartForSynVesicles < 0 ) dOppladingsFartForSynVesicles = 0;
+*/
+			//for å la facilitation "ebbe ut", kjører eg konstant "lekking" av syn.v. (sjekker først om den er ulik 0)
+			if(ulAntallSynapticVesiclesAtt)
+				ulAntallSynapticVesiclesAtt -= 3 ;
+			
+			// Oppdaterer timestamp for oppdatering av syn.
+			ulTimestampForrigeOppdatering = ulTidsiterasjoner;
+			
+			// Neste iterasjons syntese av S.V. :
+  			snForrigeSynteseAvSV = ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) * 0.2;
+			// Dersom den er negativ, halver den. Andre effekter som styrer sletting av s.v. ...
+			if(snForrigeSynteseAvSV<0) snForrigeSynteseAvSV/=3;
 
-			//for å la facilitation "ebbe ut", kjører eg konstant "lekking" av syn.v.
-			ulAntallSynapticVesiclesAtt -= 1 ;
-
-
-			cout<<"Lader opp igjen synapse med " <<dOppladingsFartForSynVesicles * (ulKlokketikkSidenForrigeFyring) <<" synaptic vesicles.\n";
-
+			return 1;
 		}
 			
 
-		unsigned long ulTimestampForrigeSignal;
-
-		/*********** For synaptic short-term depression: ***********/
-		
-		// Desse er vedtatt som variable i neurolog-milø. (FAKTA):
-		unsigned long ulAntallSynapticVesiclesAtt; 		// -For synaptic (short term) depression. 
-	       									// Gjør også slepp av s.v. prosentvis (som eit diff-lign. sys.)
-	 	float fGlutamatReceptoreIPostsynMem;				// -Beskriver antall neuroReceptore i postsynaptisk membran.
-		// Det finnes en uTotaltAntallReceptoreIPostsynNeuron_setpunkt; som skal være med å styre variabelen over, når postsyn fyrer.
-		
-		// Følgande er variable ifølge mi tankerekke (HYPOTESE):
-		double dOppladingsFartForSynVesicles; 			// -Er variabel for å ta høgde for potentiation og augmentation..
-		unsigned long ulAntallSynV_setpunkt; 			// -For å variere antall syn.vesicles. Min teori om facilitation/ 
-										// augmentation / korttids potentiation.
-		//double dReproduksjonAvSynV; 		// -For å ha membranstørrelsen variabel.. Sjå (min teori). Trenger også mem. areal-var.
-	
 	public:
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
 		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
@@ -208,6 +254,13 @@ class synapse {
 
 		neuron* pPreNode;
 		neuron* pPostNode;
+
+
+		static list<synapse*>  pNesteSynapseUtregningsKoe;
+		static list<synapse*>  pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
+		
+		
+
 
 
 		// ikkje i bruk enda:
@@ -258,6 +311,8 @@ class synapse {
 		void skrivUt(){ cout<<"tulleutskrift. test.\n"; /**this;*/ }
 		friend std::ostream & operator<< (std::ostream & ut, synapse );
 		friend std::ostream & operator<< (std::ostream & ut, neuron );
+		friend int initArbeidskoer();
+		friend class synSkilleElement;
 };
 
 
@@ -277,19 +332,38 @@ class synapse {
 
 
 /*******************************************************************************************************
- ********************    class tidsSkilleElement                                     *******************
+ ********************    class synSkilleElement                                     *******************
  ********************        - Eit tidsskille for neurale nettet. skal iterere       *******************
  ********************          tid, og legge til nytt tidselement i arbeidskøa.      *******************
  ********************        - Alt dette i overloada funskjon, for å sleppe å        *******************
  ********************          endre på der vi  kaller funskjonane i køa.            *******************
  ******************************************************************************************************/
-class tidsSkilleElement : public synapse {
+class synSkilleElement : public synapse {
 	
 	public:
-		tidsSkilleElement() : synapse('t') { cout<<"\tinne i konstruktor\n"; }
+		synSkilleElement() : synapse('t') { cout<<"\tinne i konstruktor\n"; }
 
 		// gjør heilt andre ting enn synapse. Heiter det samme pga overloading.
 		void aktiviserOgRegnUt(); // Utleda i neuroEnhet.cpp
+
+		// Legger seg sjølv til sist i lista, og returnerer 0 (symboliserer at liste er ferdig (det før skilleelementet) )
+		int oppdater(){ 
+			// kan være lurt å for sikkerhetsskuld ta med if(pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() == this )  - Men treigare..
+			if( synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() != this ){ cout<<"FEIL synapse.h_52"; exit(-1); }
+			/* IKKJE LØYSING: feilsjekk..  */
+
+			// legg til på slutt:
+			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back(this);   	
+			// Fjærner dette element fra oppdateringsliste:
+			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
+
+			return 0;
+		}
+	       	/* return 0 er heile poenget med int-returverdi her. Skal ret. 0 ved synSkilleElement, og 1 ved vanlig ok
+		 * 	Dersom det er vanlig oppdatering av vanlig synapse, vil den returnere 1, her returnerer den 0, Dette gjør at eg kan kjøre
+		 * 	while( ! (kø++)->oppdater() );  // trur ikkje noke skal gjøres. Kanskje utskrift eller noke..
+		 */
+
 };
 
 

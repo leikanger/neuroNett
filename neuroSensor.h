@@ -25,7 +25,7 @@
 class neuroSensor : public neuron{
 	private:
 		unsigned int nFrekvens;
-		//unsigned long ulForrigeTidspunkt; // for tidsSkilleElement, og frekvensutregning.
+		//unsigned long ulForrigeTidspunkt; // for synSkilleElement, og frekvensutregning.
 		int nAntallRepitisjonerAvSignal;
 
 	public:	 
@@ -66,5 +66,5 @@ class neuroSensor : public neuron{
 
 		// leggTilSynapse() finnes fra neuron.
 
-		friend class tidsSkilleElement;
+		friend class synSkilleElement;
 };

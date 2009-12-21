@@ -1,14 +1,18 @@
 
 /********************************************************************************************************************
-**********          UMIDDELBAR plan:  Skal implementere MA-filter for synapsene, slik at det er stor treig-**********
-**********                            het i systemet. Eller anna framgangsmåte..                           **********
-**********                            Problemet med MA-måten, er at det tar lang tid før den når maks      **********
-**********                            verdien dens. Kanskje det er bedre med sigma-funksjon? (med kva arg?)**********
-**********                            - Målet er stor treighet, men rask start av kurva, og sein utlading. **********
+**********          UMIDDELBAR plan:  Driter i MA-filteret. Dette er for treigt begge veier (tar lang tid  **********
+**********                            før SV blir sluppet. Bedre måte er å implementere membran-teorien min.*********
+**********                            Dette er gjort. Neste som står på programmet er oppdaterings-liste   **********
+**********                            , som skal holde styr på kva synapser som trenger å oppdateres eit par*********
+**********                            iterasjoner til. Jeje. Har begynt her og, men no skal eg sjå tv.     **********
 **********                                                                                                 **********
-**********                            TENK TENK!                                                           **********
 ********************************************************************************************************************/
 
+- korleis er det med sletting av pNesteSynapseSomIkkjeErFerdigOppdatert_Koe - sletting når eit element er oppdatert?
+	A) Fra eksternt? ytre kontrolloop sletter det, når jobben er gjort.
+	B) Fra internt?  Sletter seg sjølv (første ledd) når første_ledd->oppdater() er kjørt?
+		- Det er ikkje mulig å gjøre det fra oppdater, siden den også kan bli kallt fra andre kilder.. Eller kan evt. ha sjekk om første synapse i kø
+		   er samme som den som blir oppdatert.
 
 
 

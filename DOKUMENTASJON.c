@@ -4,7 +4,7 @@ TID:
 For å ordne tid, slik at det er avhengig av global tid, eller klokketikk i prosessor, eller andre urelevante faktore, har eg implementert en sceduler fOr
 Auron. Denne går ut på at ei arbeidsliste holder orden på kva jobber som står fOr tur. Kvar gang en jobb blir utført, og denne leder til nye jobber,
 blir desse nye jobbane lagt til på slutten av lista. I tillegg har eg eit objekt som har samme type "jobbane" i lista. Jobbane er av type synapse, og 
-tidsSkilleElement er av typen tidsSkilleElement : public synapse ; 
+synSkilleElement er av typen synSkilleElement : public synapse ; 
 Videre er funskjonen void regnUt() overloada, slik at andre handlinger kan utføres når *arbeidslista->regnUt() kalles.
 Desse funskjonane er:
 	- legger peiker til seg selv (objektet) til bakerst på arbeidslista.
@@ -74,7 +74,7 @@ ikkje sikker på om det er en god ide, eller ikkje. Greit nok med "momentan frek
 Om_klassene_Og_variablane_Og_funksjonane:
 
 global: - ulTidsiterasjoner : extern unsigned long 
-	Tidspunkt iterert ved tidsSkilleElement . Sjå "TID" øverst i denne fila.
+	Tidspunkt iterert ved synSkilleElement . Sjå "TID" øverst i denne fila.
 
 
 neuron:
@@ -83,7 +83,7 @@ neuron:
 	       	Verdi foR depolarisering av neuron. Brukes til å kalkulere om neuron fyrer. 
 
 		- ulTimestampForrigeInput : unsigned long 	- protected
-		Tidspunkt foR forrige input ved den globale tidsvariablen, som blir iterert i tidsSkilleElement. (sjå "TID" øverst i fila).
+		Tidspunkt foR forrige input ved den globale tidsvariablen, som blir iterert i synSkilleElement. (sjå "TID" øverst i fila).
 		Brukes til å regne ut degradering av nVerdiForDepolarisering etter tid, når nVerdiForDepolarisering skal brukes til å beregne noke.
 
 		- ulTimestampFyring 	  : unsigned long 	- protected
@@ -170,7 +170,7 @@ synapse:
 		eller ved å implementere eit enkelt MA(moving average)-filter. Dette foR å legge opp til facilitation. /*XXX*/
 
 		virtual void aktiviserOgRegnUt() : 	virtual void(void) : 	public
-		Hovedfunskjon som kalles fra eksternt. Grunnen til at den er virtual, er at den overlagres i arva klasse (tidsSkilleElement).
+		Hovedfunskjon som kalles fra eksternt. Grunnen til at den er virtual, er at den overlagres i arva klasse (synSkilleElement).
 		Det er her hovedfunksjonen til synapse regnes ut, som kalkulering av antall syn.v. som skal sleppes, kor mange som er igjen, om effekta er
 		eksitatorisk eller inhibitorisk, oppdatering av antall s.v., osv.
 
@@ -179,5 +179,5 @@ synapse:
 	FRIEND:
 	        operator<<( , synapse )
 
-tidsSkilleElement : public synapse
+synSkilleElement : public synapse
 	

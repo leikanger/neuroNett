@@ -121,7 +121,7 @@ class arbeidsHistorieElement;
 
 // globale variabelDeklarasjoner:
 extern unsigned long ulTidsiterasjoner;
-extern list<synapse*> 		    pNesteSynapseUtregningsKoe;
+//extern list<synapse*> 		    pNesteSynapseUtregningsKoe;
 extern list<arbeidsHistorieElement*> pArbeidsHistorieListe;
 
 extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres her.
@@ -178,11 +178,9 @@ class neuron {
 			// Legger til verdi.
 			nVerdiForDepolarisering += nInnsignalArg;
 			
-			cout<<"\ninnsignal til neuron: "<<nInnsignalArg <<"\n";
-
 			// utskrift:
 			//if( ulTidsiterasjoner % 1000 == 0){
-			cout<<" Verdi ( før | etter-tid + nytt_signal => etter nytt signal ) :\t::::\t" ; 	cout.width(8);
+			cout<<" Verdi ( før-tid | etter-tid ... ) :\t:\t" ; 	cout.width(8);
 			cout<<std::left <<foerTidSig; 	                     cout<<"    |    ";  cout.width(8); cout<<etterTidSig;
 			cout<<" \t+\t"; cout.width(8); cout<<nInnsignalArg; cout<<" \t=>\t";  cout.width(8); 	cout<<nVerdiForDepolarisering <<"\n";
 			//}
@@ -217,7 +215,7 @@ class neuron {
 			// denne fyrer: sjekk alle som den synapser til ( legg til i arbeidskø ):
 			for( std::vector<synapse*>::iterator iter = pUtSynapser.begin(); iter != pUtSynapser.end(); iter++ )
 			{ 	// legger alle synapsene mine inn i arbeidskø
-				pNesteSynapseUtregningsKoe.push_back( *iter );
+				synapse::pNesteSynapseUtregningsKoe.push_back( *iter );
 			}	//Legg til alle synapser i neste fifo-kø foR utregning. //OK // går over til bare ei kø, med "tids-synapse"
 	
 			// TODO Legg også inn litt LTP i kva synapse. TODO

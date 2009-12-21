@@ -6,12 +6,12 @@ using std::list;
 
 
 // "Arbeidsliste" - bl.a. for å holde styr på tid.
-list<synapse*> pNesteSynapseUtregningsKoe;
+//list<synapse*> pNesteSynapseUtregningsKoe;
 
 // Historieliste  - holder styr på historia til arbeidet (lista over)
 list<arbeidsHistorieElement*> pArbeidsHistorieListe;
 
-// alle frekvensstyrte neurosensore. Skal kontrolleres (i likhet med anna frekvensstyring) i tidsSkilleElement
+// alle frekvensstyrte neurosensore. Skal kontrolleres (i likhet med anna frekvensstyring) i synSkilleElement
 list<neuroSensor*> pNeuroSensorListe;
 
 
@@ -45,6 +45,7 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 		bInhibitorisk_effekt(argInhibitorisk_effekt),
 		ulTimestampForrigeSignal( ulTidsiterasjoner ),
 		ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
+		ulSynapticVesicles_i_membran (0),
 	 	fGlutamatReceptoreIPostsynMem( v ),
 		//dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
 		ulAntallSynV_setpunkt 	     (DEF_startANTALL_SYN_V),
@@ -66,21 +67,9 @@ std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 
 
 	for( std::vector<synapse*>::iterator iter = neuroArg.pUtSynapser.begin(); iter != neuroArg.pUtSynapser.end(); iter++ ){
-		/* *********************************************************************
-		 * *****                                                           *****
-		 * *****               VEKK START:                                 *****
-		 * *********************************************************************/ 
-		//** VEKK:
-			(*iter)->oppdater();
-			// DENNE SKAL IKKJE VÆRE MED HER. FØKKER OPP en del sjekker, for tid XXX:
-			(*iter)->ulTimestampForrigeSignal = ulTidsiterasjoner;
-		//** STOPP 		(DETTE er bare noke er tar med mens eg driver å undersøker opplading av syn.vesicles...)
-		/* *********************************************************************
-		 * *****               VEKK SLUTT.                                 *****
-		 * *****                                                           *****
-		 * *********************************************************************/ 
 
 	 	ut<<"\t" << (*iter)->ulAntallSynapticVesiclesAtt <<" antall syn.vesicles att.  TIL " <<(*iter)->pPostNode->navn <<endl;
+
 	}
 
 	return ut;
@@ -96,17 +85,24 @@ std::ostream & operator<< (std::ostream & ut, synapse synArg )
 	return ut;
 }
 
-// Spesielle overlagra funksjonen i tidsSkilleElement: (alt som skal gjøres en gang per tidsiterasjon..)
-void tidsSkilleElement::aktiviserOgRegnUt()
+
+
+/* ******************************************************************************************************
+// Spesielle overlagra funksjonen i synSkilleElement: (alt som skal gjøres en gang per tidsiterasjon..)
+// 	- skal øke tid med 1.
+// 	- sjekke om neurosensore skal fyre.
+// 	- oppdatere synapser i lista for syn. i transient forløp.
+ * ********                                                                                    **********
+ * ******************************************************************************************************/ 
+void synSkilleElement::aktiviserOgRegnUt()
 {
 	// legger meg til bakerst i arbeidskø. (for å holde på "iterasjoner" videre i arbeidskøa)
-	pNesteSynapseUtregningsKoe.push_back( this );
+	synapse::pNesteSynapseUtregningsKoe.push_back( this );
 	// iterer tid.
 	ulTidsiterasjoner++;
 
-	// Evt andre ting...
-	cout<<"\n\t\t\t\t\t\t\tØker tid til:\t" <<ulTidsiterasjoner <<"\n";
-
+	// utskrift:
+	cout<<"\n\t\t\t\t\t\t\t\tØker tid til:\t" <<ulTidsiterasjoner <<" -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  \n\n";
 
 
 	// Sjekker om frekvens-output-sensore skal fyre.
@@ -114,23 +110,28 @@ void tidsSkilleElement::aktiviserOgRegnUt()
 		(*i)->sjekkOmSkalFyres_ogFyr();
 	}
 
-	/*
-		Kontroller frekvens på ulike synapser, for å holde styr på LTP/LTD, neuropeptid, osv..
-			- overfør utførte "jobber" fra pNesteSynapseUtregningsKoe til pJobbHistorie
-				- skal ha historie, og historie-historie (iterativ historie) for å begrense arbeid (trenger ikkje regne ut
-				alle i historia..)
-				- desse bør kanskje være av spesiell klasse. Skal ha timestamp, for når de var utregna med aktuelle frekvens,
-				for å kunne regne ut iterativt ny frekvens etter ei stund. Køa kan dermed være bare n element stor, der
-				n er antall neuron. 
-				- kva betyr frekvens i dette tilfelle? "momentan frekvens" gir ikkje meining. Må finne på ei meining/funksjon
-				
-		Anna..
-	*/
 
-	//BARE FOR Å TESTE OPPLADING AV HEILT UTLADD synaptic vesicle.
-	//if(ulTidsiterasjoner==55)
-	//pNeuroSensorListe.front()->fyr();
-	cout<<*pNeuroSensorListe.front() <<endl;
+	// Dersom nokre synapser ikkje har blitt fult opplada, skal de lades opp litt meir no (og evt. legges til i køa igjen, om meir gjenstår).
+	/// TODO kjør oppdateringsliste. (de som ikkje er ferdig oppdatert, skal oppdateres en gang til..
+
+
+	// ha en iterasjon i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe... Kanskje ved å fjærne første ledd når er ferdig med det.
+	cout<<"Før løkke. Returverdi fra funk: " <<pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front()->oppdater() <<endl;
+	cout<<"Før løkke. 2 " <<endl;
+ 	while( pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front()->oppdater() == 1 ) {
+	      cout<<"Inni løkke. je\n";
+	} // Neste linje: tar også bort synSkilleElement ... 
+	cout<<"Størrelse på kø: " <<pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size();
+
+	
+	cout<<" => " <<pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size();
+	cout<<"Etter løkke.\n";
+	/* ***
+	 * Denne lista er også schedula med eit skilleelement. Dette skilleelementet
+	 * har også overlagra oppdater(), som returnerer 1 ved normal drift, og 0 her.
+	 * Dette gjør at while-setninga over er gyldig.
+	 * ***/ 
+
 }
 
 void synapse::aktiviserOgRegnUt()
@@ -154,16 +155,27 @@ void synapse::aktiviserOgRegnUt()
 	// 	definert for synapse, og som kan variere med LTP/LTD.
 
 	// slept - sluppet
-	uAntallSynapticV_sluppet = 0.07 * ulAntallSynapticVesiclesAtt;
+	uAntallSynapticV_sluppet = 0.2 * ulAntallSynapticVesiclesAtt;
 				//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (membranareal kan øke).
 	
 	cout 	<<" Sendte " <<uAntallSynapticV_sluppet <<" syn.V. " 
-		<<"\t(av gjenverande " <<ulAntallSynapticVesiclesAtt 
-	        <<")\t->  " <<pPostNode->navn 
-		<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt; //<<"\n";
+		<<"\t(av " <<ulAntallSynapticVesiclesAtt <<")"
+	        <<"\t->  " <<pPostNode->navn 
+		//<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt; //<<"\n"
+		;
 	if( bInhibitorisk_effekt ) cout<<" (inhibitorisk)\n"; else cout<<" (eksitatorisk)\n";
 
-	
+	/* Ikkje naudsynt. sluppet = 0.07 * antallAtt (sjå nokre linjer opp..
+	// forsikrer meg om at ulAntallSynapticVesiclesAtt ikkje blir negativ:
+	if( ulAntallSynapticVesiclesAtt - uAntallSynapticV_sluppet < 0 ){
+		uAntallSynapticV_sluppet = ulAntallSynapticVesiclesAtt; 
+	}*/ 
+
+	// og trekker fra de brukte syn.vesicles fra ulSynapticVesiclesAtt.
+	ulAntallSynapticVesiclesAtt -= uAntallSynapticV_sluppet;
+
+	// Skriver det merger dei inn i membran:
+	ulSynapticVesicles_i_membran += uAntallSynapticV_sluppet;	
 
 
 	unsigned uTempPostsynEffekt = uAntallSynapticV_sluppet * fGlutamatReceptoreIPostsynMem;
@@ -178,10 +190,9 @@ void synapse::aktiviserOgRegnUt()
 		pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal(        uTempPostsynEffekt );
 	
 	
-	// og trekker fra de brukte syn.vesicles fra ulSynapticVesiclesAtt.
-	ulAntallSynapticVesiclesAtt -= uAntallSynapticV_sluppet;
-
-
+	// Legger til synapse i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.
+	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
+	
 	/******* oppdaterer timestamp for tidspkt for signal ********/
 	ulTimestampForrigeSignal = ulTidsiterasjoner;
 }		
