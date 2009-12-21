@@ -43,7 +43,7 @@ void neuron::leggTilSynapse( neuron* nyttUtNeuron, bool inhib_e, float vekt)
 // constructor:
 synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt /*=false*/, float v /*=1*/ ) :  // v er oppgitt i promille.
 		bInhibitorisk_effekt(argInhibitorisk_effekt),
-		ulTimestampForrigeSignal( ulTidsiterasjoner ),
+		//ulTimestampForrigeSignal( ulTidsiterasjoner ),
 		ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
 		ulSynapticVesicles_i_membran (0),
 	 	fGlutamatReceptoreIPostsynMem( v ),
@@ -154,7 +154,7 @@ void synapse::aktiviserOgRegnUt()
 	// Signaloverføring er avhengig av antall receptorer for aktuelle neurotransmittor. Ganger med en variabel
 	// 	definert for synapse, og som kan variere med LTP/LTD.
 
-	// slept - sluppet
+	// sluppet trengs ikkje. Kan for så vidt ha lokal variabel her. Initielt var tanken å ha en liten treighet her. type MA..
 	uAntallSynapticV_sluppet = 0.2 * ulAntallSynapticVesiclesAtt;
 				//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (membranareal kan øke).
 	
@@ -194,7 +194,7 @@ void synapse::aktiviserOgRegnUt()
 	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
 	
 	/******* oppdaterer timestamp for tidspkt for signal ********/
-	ulTimestampForrigeSignal = ulTidsiterasjoner;
+	//ulTimestampForrigeSignal = ulTidsiterasjoner;
 }		
 
 // vim:fdm=marker:fmr=//{,//} : fdl=3

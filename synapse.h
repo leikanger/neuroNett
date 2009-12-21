@@ -23,7 +23,7 @@ using std::endl;
 #define DEF_startANTALL_SYN_V 		    	1000
 #define DEF_OPPLADING_AV_S_V_DIVISOR 		35
 #define MAKS_OPPLADNINGSFART_FOR_S_V 		1000
-#define OPPDATERINGS_GRENSE_SYN_V 		15 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
+#define OPPDATERINGS_GRENSE_SYN_V 		20 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
 					//XXX skalværeMeir
 
 #define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
@@ -53,14 +53,6 @@ extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres
 
 
 
-/* ------------------------------------------------------------------------------------------------------
- *  --------                           PLAN:                                                  -----------
- *  --------  Gjør slik at ladingsfarta for synaptic vesicles er bra. No går han rett opp over-----------
- *  --------      til 113 (%). Uten provosering. Skal gå til 100. I tilfelle augmentation,    -----------
- *  --------      skal den gå over.                                                           -----------
- *  -----------------------------------------------------------------------------------------------------*/
-
-
 
 /*******************************************************************************************************
  ********************    class synapse                                               ******************* synapse( neuron*, neuron*, double v =DEF_OVER..);
@@ -71,11 +63,14 @@ extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres
 class synapse {
 	private:
 		const bool bInhibitorisk_effekt;
-		// overvåkinga skjer annen plass. Her skjer bare initiering (og kanskje vedlikehold).
 		
+		// MA-effekt på reproduksjon, Nei. Men ta med forrige. Tenk meir.
+		int nBestilltReproduksjonAvSvFraForrigeIter;
+
 		// uForrigeAntallSynapticV_slept
 		unsigned uAntallSynapticV_sluppet; // Er denne i bruk? XXX
-		//XXX FINN MÅTE Å LAGE 5-6 ELEMENT-LANG MA-filter for systemtreighet. ???
+		// for systemtreighet. ???
+		//Eller finn først ut om dette er veien å gå..
 
 
 		void LTP( int nVerdi){
@@ -112,7 +107,7 @@ class synapse {
 
 
 
-		unsigned long ulTimestampForrigeSignal;
+		//unsigned long ulTimestampForrigeSignal; 	// For ?? 
 		unsigned long ulTimestampForrigeOppdatering; /// Hovedsaklig for å unngå å oppdatere fleire ganger kvar iterasjon..
 
 		/*********** For synaptic short-term depression: ***********/
@@ -158,7 +153,7 @@ class synapse {
 ///XXX HER XXX
 			// Sjekker om den har oppdatert denne iterasjonen:
 			if( ulTimestampForrigeOppdatering == ulTidsiterasjoner ){
-	 			cout<<"\tXET503\t";
+	 			cout<<"\ntimestamp for oppdatering er allerede tatt.\n";
 	 			return 1; // eller kanskje noke anna. Bare ikkje 0 som returverdi.
 			}
 			
@@ -184,63 +179,61 @@ class synapse {
 			// (dette er effekten eg prøver på gjennom kall fra synSkilleElement.oppdater()...)
 
 			// syntese av heilt nye S.V. reproduksjon skal skje seinare plass i koden. 	Veit ikkje om er så viktig med static - timedelay...
-			static int snForrigeSynteseAvSV = 0;
-			ulAntallSynapticVesiclesAtt += snForrigeSynteseAvSV;
+			static int snBestilltSynteseAvSVFraForrigeIter = 0;
+			ulAntallSynapticVesiclesAtt += snBestilltSynteseAvSVFraForrigeIter;
 			// (dersom den er negativ, skal denne også sørge for å ta vekk litt syn. v.(sjå slutt av denne funk) )
 
+	//TODO TA MED MEIR TREIGHET HER.
+	//for å få opp syntese, og oversving størrelse..
+	//Kanskje vha ei MA-filter.
+			static int snBestilltReproduksjonAvSvFraForrigeIter = 0;
 			// reproduksjon av S.V.
-			int nEndringImembranTemp = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
-			ulAntallSynapticVesiclesAtt  += nEndringImembranTemp;
-			ulSynapticVesicles_i_membran -= nEndringImembranTemp;
+			ulAntallSynapticVesiclesAtt  += snBestilltReproduksjonAvSvFraForrigeIter;
+			ulSynapticVesicles_i_membran -= snBestilltReproduksjonAvSvFraForrigeIter;
 
 			
 			
-			cout 	<<"\n\t\tS.V. " <<ulAntallSynapticVesiclesAtt <<"\t| membran:\t" <<ulSynapticVesicles_i_membran
-				<<"\t(    " <<(int)(nEndringImembranTemp+((signed)ulAntallSynV_setpunkt-(signed)ulAntallSynapticVesiclesAtt)*0.05) <<" S.V.)"
-				<<"\t\t|=|  " <<nEndringImembranTemp <<" regen. og " 
-				<<snForrigeSynteseAvSV <<" er nye. \n"; 
-			cDebug<<"nEndringImembranTemp: " <<nEndringImembranTemp <<"     . ulAntallSynV_setpunkt: " <<ulAntallSynV_setpunkt 
-				<<"  . ulAntallSynapticVesiclesAtt: " <<ulAntallSynapticVesiclesAtt 	<<endl;
+			cout 	<<"\n\t\tS.V. " <<ulAntallSynapticVesiclesAtt <<" / " <<ulAntallSynV_setpunkt
+			       	<<"\t| membran:\t" <<ulSynapticVesicles_i_membran <<"\t\t|=|  " <<snBestilltReproduksjonAvSvFraForrigeIter <<" regen. og " 
+				<<snBestilltSynteseAvSVFraForrigeIter <<" er nye. \n"; 
+				//<<(int)(snBestilltReproduksjonAvSvFraForrigeIter+((signed)ulAntallSynV_setpunkt-(signed)ulAntallSynapticVesiclesAtt)*0.05) 
 
-			if( 		(ulSynapticVesicles_i_membran < 3*OPPDATERINGS_GRENSE_SYN_V)  	&& 
-					( abs(ulAntallSynV_setpunkt-ulAntallSynapticVesiclesAtt) < OPPDATERINGS_GRENSE_SYN_V )   ){
+			cDebug 	<<" ulAntallSynapticVesiclesAtt :        \t" <<ulAntallSynapticVesiclesAtt <<" / " <<ulAntallSynV_setpunkt <<endl;
+
+			if( 		(ulSynapticVesicles_i_membran < OPPDATERINGS_GRENSE_SYN_V)  	&& 
+					( abs(ulAntallSynapticVesiclesAtt-ulAntallSynV_setpunkt) < 3*OPPDATERINGS_GRENSE_SYN_V )   ){
 	 			// nullstill avviket.
-				cout<<"\t\tFERDIG\n\n";
+				cout<<"\n\n\t\tFERDIG\n\n";
 				ulAntallSynapticVesiclesAtt = ulAntallSynV_setpunkt;
 				ulSynapticVesicles_i_membran = 0; /// ?? XXX Kanskje dette skal vekk, etterkvart.
 
 			}else{
-				cout<<"\t\tikkje ferdig.\n\n";
+				//cout<<"\t\tikkje ferdig.\n\n";
 	 			pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
 			}
 
-/* forenkla måte. Funker.			
-			//begynner uten MA-filter (bare eit ledd tilbake (=siste ledd) )
-			//MEINEINEI: skal ha membran-effekt istadenfor. treledds: synV-mem-førFabrikkOgIfabrikk tilbake til start..
-			//
-			// Endre gro-raten. Denne skal ha treighet i seg (type syn. depression og potentiation/augmentation)
-			long ulTempDiff;
-			if( ( ulTempDiff = ulAntallSynV_setpunkt-ulAntallSynapticVesiclesAtt) > MAKS_OPPLADNINGSFART_FOR_S_V ){
-				ulTempDiff = MAKS_OPPLADNINGSFART_FOR_S_V;
-	 			// TTT XXX TODO ,og legg til oppdateringsjobb sist i arbeidsliste.
-			}
- 			dOppladingsFartForSynVesicles = ulTempDiff / DEF_OPPLADING_AV_S_V_DIVISOR;
-			cout<<"-ulTempDiff: " <<ulTempDiff <<" (ulAntallSynapticVesiclesAtt-ulAntallSynV_setpunkt)" <<endl;
-			cout <<"-( " <<ulAntallSynapticVesiclesAtt <<", " <<ulAntallSynV_setpunkt <<" )\n";
-			//kanskje eg skal ha med anna effekt, som fører til ulineær kurve i utladinga i ovesvingen? isåfall lett å legge den her:
-			if( dOppladingsFartForSynVesicles < 0 ) dOppladingsFartForSynVesicles = 0;
-*/
-			//for å la facilitation "ebbe ut", kjører eg konstant "lekking" av syn.v. (sjekker først om den er ulik 0)
+			/*for å la facilitation "ebbe ut", kjører eg konstant "lekking" av syn.v. (sjekker først om den er ulik 0)
 			if(ulAntallSynapticVesiclesAtt)
 				ulAntallSynapticVesiclesAtt -= 3 ;
+			flytta til syntese-plassen, for å ha %-vis effekt.*/
 			
 			// Oppdaterer timestamp for oppdatering av syn.
 			ulTimestampForrigeOppdatering = ulTidsiterasjoner;
 			
-			// Neste iterasjons syntese av S.V. :
-  			snForrigeSynteseAvSV = ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) * 0.2;
+			// Neste iterasjons syntese av S.V. : 	( Lita MA-effekt for å smoothe det ut litt.)
+  			snBestilltSynteseAvSVFraForrigeIter += ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) * 0.25;
+			snBestilltSynteseAvSVFraForrigeIter /= 2;
+
 			// Dersom den er negativ, halver den. Andre effekter som styrer sletting av s.v. ...
-			if(snForrigeSynteseAvSV<0) snForrigeSynteseAvSV/=3;
+			if(snBestilltSynteseAvSVFraForrigeIter<0){
+			 	snBestilltSynteseAvSVFraForrigeIter/=3;
+				// setter tak for sletting av s.v.
+		 		if(snBestilltSynteseAvSVFraForrigeIter<(-5) )	
+					snBestilltSynteseAvSVFraForrigeIter = -5;
+			}
+
+			// Nester iterasjons reproduksjon av S.V. :
+			snBestilltReproduksjonAvSvFraForrigeIter = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
 
 			return 1;
 		}
