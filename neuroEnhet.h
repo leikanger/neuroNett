@@ -83,10 +83,6 @@ Kladd:
  * * * * * * * * * *                        KODE STARTER :                           * * * * * * * * * *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef SYNAPSE
-    #define NEURON
-    #include "synapse.h"
-#endif
 
 #include <iostream>
 #include <iomanip>
@@ -127,10 +123,10 @@ extern list<arbeidsHistorieElement*> pArbeidsHistorieListe;
 extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres her.
 
 
-#ifndef neuroEnhet_h
-#define neuroEnhet_h
-
-
+#ifndef NEUROENHET_h
+  #define NEUROENHET_h
+ 
+  #include "synapse.h"
 
 
 

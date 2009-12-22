@@ -3,6 +3,7 @@
 #include "neuroSensor.h"
 
 
+
 //#include <pthread.h>
 
 // funk sist i fila, for å sleppe å deklarere alt her før bruk:
@@ -21,7 +22,6 @@ void* arbeidsKoeArbeider(void*);
 // Deklarasjon av statiske element i synapse. 
 list<synapse*>  synapse::pNesteSynapseUtregningsKoe;
 list<synapse*>  synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
-
 
 
 
@@ -56,15 +56,22 @@ int initArbeidskoer()
 }
 
 
-
 /*******************************
 ***   int main()             ***
 ***       arg:      -        ***
 ***       retur:    -        ***
 *******************************/
-int main()
+int main(int argc, char *argv[])
 {
+	
+	
+	
+	
+	//static ofstream utskriftsFil( argv[1] );
+	//utskriftsFil<<"data=["; // fila skal brukes til å plotte data i octave..
 
+
+	// initierer rand() - seed.
 	srand( time(0) );
 
 
@@ -83,7 +90,7 @@ Tenking rundt short-term plasticity:
 */ 
 
 
-
+	
 
 
 
@@ -102,13 +109,12 @@ Tenking rundt short-term plasticity:
 
 	
 	//neuroSensor( neuron* pN, double vekt, int nFrekvens, std::string navn, int antallSig) : 
-	neuroSensor B( &C, 0.1, 1, "sB", 3); // B.leggTilSynapse(&C);
+	neuroSensor B( &C, 0.1, 1, "sB", 2); // B.leggTilSynapse(&C);
 	//synapse sBD(&B, &C, true, 0.5 );
 	//synapse sCD(&C, &D);
+
 	
-
-
-	// funk. som er void* (void*) - funksjon	
+	// void*(void*) - funksjon. Her går kalkuleringa av listene..	
 	arbeidsKoeArbeider(0);
 
 
@@ -117,14 +123,52 @@ Tenking rundt short-term plasticity:
 	for( list<arbeidsHistorieElement*>::iterator i = pArbeidsHistorieListe.begin() ; i != pArbeidsHistorieListe.end(); i++ ){
 	  	cout <<((*i)->arbeidsElement_synP)  <<" er brukt " << (*i)->antallGangerBrukt <<" ganger. \n";
 	}
+
+	//XXX Funker ikkje heilt, men eg er inne på løysing. Prøv å skrive ut verdien til (*i).
 	cout<<"\n\nog pNesteSynapseSomIkkjeErFerdigOppdatert_Koe:\n";
 	for( list<synapse*>::iterator i = synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.begin() ;
 		       	i != synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.end(); i++ ){
-	  	cout <<(*i)  <<"\n";
+	  	cout <<(*i)  <<"\n------------------------\n";
 	}
+
+
+	// Quickfix, før eg får til destructor skikkelig.. (dette skal inn i synapse-destructor)
+	synapse* pSyn = (*B.pUtSynapser.begin());
+	pSyn->utskriftsFilLogg << "];\nplot(data)\n"; pSyn->utskriftsFilLogg.flush();
+	//B.pUtSynapser.begin()->utskriftsFilLogg.close();
 
 	return 0;
 }
+
+
+
+
+/*
+ * 		fra partikkel:
+ofstream & useUtskriftsFil( std::string filNavn ="" )
+{ //{4
+
+	static ofstream utskriftsFil( filNavn ); 
+
+	// Unødvendig:
+	if( filNavn !="") //Første gang denne funk kalles	
+	{
+		std::cerr<<"Opner utskrift til alternativ utskrifts(fil) " <<filNavn  <<"\t(SETTER UTSKRIFTSFIL..)\n";
+		utskriftsFil<<"data = [";
+	}else if(filNavn == "avslutt"){
+	 	utskriftsFil<<"]; \n plot(x);";
+	}
+
+	if( !utskriftsFil ){ 
+		std::cerr<<"FEIL Klarte ikkje åpne utskrift(sfil) " <<filNavn <<endl; 
+		exit(-1); 
+	}
+
+	
+	return utskriftsFil;
+} //}4
+*/
+
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
@@ -132,7 +176,7 @@ Tenking rundt short-term plasticity:
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  void* arbeidsKoeArbeider(void* ){
 
-	while( ulTidsiterasjoner<30 ){
+	while( ulTidsiterasjoner<100 ){
 		if( synapse::pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : l.69\n\n"; exit(-1); }
 	
 		synapse* pSynForste = synapse::pNesteSynapseUtregningsKoe.front();
@@ -163,7 +207,7 @@ Tenking rundt short-term plasticity:
 		}
 
 		if( !bLagtTilIarbeidsHistorie ){ pArbeidsHistorieListe.push_front( new arbeidsHistorieElement(pSynForste) ); 	}
- 	}
+ 	} 
 
 	cout<<"\nTot. element i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe: " <<synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size() <<endl;
 	return 0;

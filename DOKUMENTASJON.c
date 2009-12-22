@@ -26,12 +26,6 @@ Er ikkje sikker på korleis dette opprettholdes, eller blir initiert/destruert. 
 	trekt fra synapsens beholdning. Det er prosentvis sending av syn.vesicles, så når synapsen er halvtom, vil halvparten av signalet sendes.
 	Reproduksjon av syn. vesicles er dynamisk ved variabelen dOppladingsFartForSynVesicles (fOr tida ikkje dynamisk (i endring), men dette er plan.)
 
-	Neste utfortring er å lage en mild oversving på antall synaptic vesicles, når den har vore veldig langt nede. IMPELMENTER TEORIEN MIN OM FACILITATION
-		- trenger reproduksjon fra membran.
-		- trenger syntese av nye syn. vesicles.
-		"?"
-	//TODO implementer min teori om facilitation (synaptic vesicles overshoot).
-
 		
  	LTP_og_homoLTD: 
 	Akkurat no driver eg å sysler med LTP og homoLTD. Dette har eg tenkt å implementere fra synapsens regnUt()-funksjon. Når den er ferdig med å regne ut
@@ -128,27 +122,32 @@ synapse:
 		konstant bool som blir initiert ved konstruering av synapse. Bestemmer om synapse er eksitatorisk eller inhibitorisk. Må initieres i constr.
 		Dersom denne er true, har synapsen inhibitorisk effekt.
 		
-		- ulTimestampForrigeSignal 	: 	unsigned long  	: 	private
-		Tids-signal foR oppdatering av synaptic vesicles, og også foR LTP/D.
+		- ulTimestampForrigeOppdatering : 	unsigned long  	: 	private
+		Tids-signal foR oppdatering av synaptic vesicles (kanskje også foR LTP/D, etterkvart)
 		
 		- ulSynapticVesiclesAtt 	: 	unsigned long 	: 	private
 	        u.long som holder styr på kor mange synaptic vesicles som er igjen i synapsen. Siden eg modellerer det som ei vansøyle/opning nedst,
 		er slepp av syn.vesicles avhengig av kor mange som er igjen. (prosentvis slepp) Dette gir også gradvis depression.
+ 			- Opplading av desse skjer ved to mekanismer i oppdater()
+				- snBestilltSynteseAvSVFraForrigeIter : Bestillt antall syntese av SV, fra forrige iter. Denne variabelen er smooth-a litt
+				    i tid, vha. ei MA-filter-lignande effekt. ( verdi+=ny, verdi/=2; )
+			 	- snBestilltReproduksjonAvSvFraForrigeIter : Repoduksjon av S.V. som ligger inne i membran. Denne er ikkje smooth-a, da det 
+			       	    kunne føre til stygge effekter av unsigned sv-i-membran.
+			    	    
 
 		- fGlutamatReceptoreIPostsynMem : 	float 		: 	private
 		Effekt (postsyn. invirkning) ved kvar synaptic vesicle. Viktig element i langtids plastisitet i synapsene. Spesielt LTP og heteroLTD.
 
-		- dOppladingsFartForSynVesicles : 	double  	: 	private
-		Mi hypotese: dersom mi hypotese stemmer, så skal det være litt treighet i systemet foR oppladning av synaptic vesicles. Dette gjør eg ved
-		å bruke forrige iterasjons oppladningsfart (eller FIRvariant). Dette gjør at vi får oversving av synaptic vesicles. Dette fører også til
+	/*	- dOppladingsFartForSynVesicles : 	double  	: 	private
+		Mi hypotese: dersom mi hypotese stemmer, så skal det være litt treighet i systemet foR opplading av synaptic vesicles. Dette gjør eg ved
+		å bruke forrige iterasjons oppladingsfart (eller FIRvariant). Dette gjør at vi får oversving av synaptic vesicles. Dette fører også til
 	        potentiation.
-		/*TODO*/ Dette er ikkje implementert enda /**/	
+		/ *Dette er ikkje implementert enda */	
 
 		- ulAntallSynV_setpunkt 	: 	unsigned long 	: 	private
 		Mi hypotese: I stadenfor at effekta over står åleine, kan vi innføre variabelt setpunkt foR antall synaptic vesicles. Denne kan økes når:
 		presyn.terminal over tid har lite synaptic vesicles. || når presyn.term. har lite s.v. , og postsyn. er sterkt depol || anna?
 		Dette kan bidra til lengre tids augentation. Og kanskje litt på LTP (på hetero-måten).
-
 		
 		- pPreNode 			: 	neuron*  	:  	public
 		- pPostNode 	 	 	: 	neuron* 	:  	public
@@ -165,17 +164,23 @@ synapse:
 
 
 		void oppdater() 		: 	void (void) 	: 	private
-		Funksjon foR opplading av synaptic vesicles. Dette er basert avvik mellom timestamp, og ulTidsiterasjoner. 
-		Trur eg skal begynne med å ha litt treighet i systemet, enten med en timedelay på 1 (bruke verdien som var regna ut i forrige iterasjon),
-		eller ved å implementere eit enkelt MA(moving average)-filter. Dette foR å legge opp til facilitation. /*XXX*/
+		Funksjon foR opplading av synaptic vesicles. Dette er skal skje kvar tidsiterasjon. Har egen kø foR dette: 
+		synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe. Alle element før synSkilleElement, i denne, skal sjekkes vha. funksjonen oppdater() 
+		Dette gjøres i synSkilleElement::aktiviserOgRegnUt(), kalt fra tidskøa ( pNesteSynapseUtregningsKoe ).
+		Vanlige synapser's oppdater() returnerer 1, mens synSkilleElement::oppdater() returnerer 0. Dette foR å kunne gjøre slik: 
+		while(kø->oppdater() ); Da vil skilleElementet kunne skille oppdateringskøa.
 
 		virtual void aktiviserOgRegnUt() : 	virtual void(void) : 	public
-		Hovedfunskjon som kalles fra eksternt. Grunnen til at den er virtual, er at den overlagres i arva klasse (synSkilleElement).
-		Det er her hovedfunksjonen til synapse regnes ut, som kalkulering av antall syn.v. som skal sleppes, kor mange som er igjen, om effekta er
+		Funksjon som kalles fra neuron, når den fyrer. Regner ut overføringa av signal til postsyn. neuron. Har tatt med synaptic vesicle, med 
+		antall, syntese, regenerering fra membran, foR å få med potentation-effekt (teori nr.1 ). Har ikkje tatt med teori nr 2, om at slepping
+		skjer som funk av areal.
+		Grunnen til at den er virtual, er at den overlagres i synSkilleElement, der den gjør alt som skal gjøres mellom kvar tids-iterasjon.
+		Det som er med på å bestemme overføring av signal er:
+			- antall synaptic vesicles i presyn. (har eit heilt maskineri foR å ligne bioNeuron)
+			- antall glutamatreceptorer i postsyn mem. (ikkje ferdig implementert. Planlagt viktig i LTP og LTD)
+		- Det er her hovedfunksjonen til synapse regnes ut, som kalkulering av antall syn.v. som skal sleppes, kor mange som er igjen, om effekta er
 		eksitatorisk eller inhibitorisk, oppdatering av antall s.v., osv.
 
-		void LTP( int nVerdi) 					: 	private
-		void homoLTD() 						: 	private
 	FRIEND:
 	        operator<<( , synapse )
 

@@ -1,6 +1,8 @@
 #include "main.h"
 #include "neuroEnhet.h"
 #include "neuroSensor.h"
+#include "synapse.h"
+#include <sstream>
 
 using std::list;
 
@@ -53,8 +55,31 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 {
 	pPreNode->pUtSynapser.push_back(  this );
 	pPostNode->pInnSynapser.push_back(this );
+	
+
+	std::ostringstream tempFilAdr;
+	tempFilAdr<<"./datafiler_for_utskrift/synapse_" <<pPreNode->navn <<"-"  <<pPostNode->navn;
+	
+	std::string tempStr( tempFilAdr.str() );
+
+	cout<<"her1\n";
+
+	cout<<"c string: " <<tempStr.c_str() <<"string: \n" <<tempStr <<endl;
+	
+	utskriftsFilLogg.open( tempStr.c_str() );
+	
+	utskriftsFilLogg<<"data = [";
+	
+	utskriftsFilLogg.flush();
 }
 
+synapse::~synapse()
+{
+	std::cerr<<"destructor i ~synapse()\n";
+	utskriftsFilLogg<<"]; plot(data)";
+	utskriftsFilLogg.close();
+	exit(-9);
+}
 
 
 /***************************
@@ -64,12 +89,8 @@ std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 {
 	ut<<"| " <<neuroArg.getNavn() <<"  | verdi: " <<neuroArg.nVerdiForDepolarisering <<" |     Med utsynapser:\n";
 	
-
-
 	for( std::vector<synapse*>::iterator iter = neuroArg.pUtSynapser.begin(); iter != neuroArg.pUtSynapser.end(); iter++ ){
-
 	 	ut<<"\t" << (*iter)->ulAntallSynapticVesiclesAtt <<" antall syn.vesicles att.  TIL " <<(*iter)->pPostNode->navn <<endl;
-
 	}
 
 	return ut;
@@ -85,6 +106,10 @@ std::ostream & operator<< (std::ostream & ut, synapse synArg )
 	return ut;
 }
 
+std::ostream & operator<< (std::ostream & ut, synSkilleElement synSkileE_arg ){
+	ut<<"synSkilleElement.\n";
+	return ut;
+}
 
 
 /* ******************************************************************************************************
@@ -116,16 +141,9 @@ void synSkilleElement::aktiviserOgRegnUt()
 
 
 	// ha en iterasjon i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe... Kanskje ved å fjærne første ledd når er ferdig med det.
-	cout<<"Før løkke. Returverdi fra funk: " <<pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front()->oppdater() <<endl;
-	cout<<"Før løkke. 2 " <<endl;
- 	while( pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front()->oppdater() == 1 ) {
-	      cout<<"Inni løkke. je\n";
-	} // Neste linje: tar også bort synSkilleElement ... 
-	cout<<"Størrelse på kø: " <<pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size();
+ 	while( pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front()->oppdater() == 1 ) ;
 
 	
-	cout<<" => " <<pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size();
-	cout<<"Etter løkke.\n";
 	/* ***
 	 * Denne lista er også schedula med eit skilleelement. Dette skilleelementet
 	 * har også overlagra oppdater(), som returnerer 1 ved normal drift, og 0 her.
@@ -193,6 +211,7 @@ void synapse::aktiviserOgRegnUt()
 	// Legger til synapse i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.
 	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
 	
+
 	/******* oppdaterer timestamp for tidspkt for signal ********/
 	//ulTimestampForrigeSignal = ulTidsiterasjoner;
 }		

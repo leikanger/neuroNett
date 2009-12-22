@@ -1,5 +1,18 @@
-#include "neuroEnhet.h"
+//#include <pthread.h>
+
+#include <iostream> // cout, osv
+#include <fstream>  // for file-streams..
+//#include <iomanip>  // Er denne i bruk? XXX
+#include <string>   // string
+#include <ostream>  // ?
+#include <vector>   // vector
+#include <stdlib.h>   // rand
+#include <algorithm> // for_each
+
+#include <cmath> 	// for pow( , )
+
 class synapse;
+class neuron;
 
 
 // globale variabelDeklarasjoner:
@@ -26,21 +39,12 @@ extern std::ostream & operator<< (std::ostream & ut, neuron neuroArg );
 
 
 #ifndef MAIN_H
-#define MAIN_H
+  #define MAIN_H
+  #include "neuroEnhet.h"
 
 
-#include <pthread.h>
 
-#include <iostream> // cout, osv
-#include <string>   // string
-#include <ostream>  // ?
-#include <vector>   // vector
-#include <stdlib.h>   // rand
-#include <algorithm> // for_each
-
-#include <cmath> 	// for pow( , )
-
-
+using std::ofstream;
 using std::cout;
 using std::endl;
 

@@ -1,12 +1,14 @@
 
-/********************************************************************************************************************
-**********          UMIDDELBAR plan:  Driter i MA-filteret. Dette er for treigt begge veier (tar lang tid  **********
-**********                            før SV blir sluppet. Bedre måte er å implementere membran-teorien min.*********
-**********                            Dette er gjort. Neste som står på programmet er oppdaterings-liste   **********
-**********                            , som skal holde styr på kva synapser som trenger å oppdateres eit par*********
-**********                            iterasjoner til. Jeje. Har begynt her og, men no skal eg sjå tv.     **********
-**********                                                                                                 **********
-********************************************************************************************************************/
+
+/* ******************************************************************************************************
+********            LAG GRAF-PLOTTER for å sjå om S.V. ser rett ut for facilitation.           **********
+********************************************************************************************************/ 
+
+
+
+
+
+
 
 - korleis er det med sletting av pNesteSynapseSomIkkjeErFerdigOppdatert_Koe - sletting når eit element er oppdatert?
 	A) Fra eksternt? ytre kontrolloop sletter det, når jobben er gjort.

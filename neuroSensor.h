@@ -1,4 +1,3 @@
-#include "neuroEnhet.h"
 
 /*
 	PLAN:
@@ -9,7 +8,10 @@
 */
 
 
+#ifndef NEUROSENSOR_H
+  #define NEUROSENSOR_H
 
+  #include "neuroEnhet.h"
 
 /*************************************************************
 ****    neuroSensor - klasse for generering av signal for ****
@@ -40,7 +42,7 @@ class neuroSensor : public neuron{
 		neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig =-1) : 
 								neuron(navn), nFrekvens(nF), nAntallRepitisjonerAvSignal(antallSig) { 
 			//før: leggTilSynapse( pN, vekt );   no:
-			synapse( this, pN, false, vekt ); 
+			new synapse( this, pN, false, vekt ); 
 			
 			// "venter" tilfeldig tidsintervall:
 			if( ulTidsiterasjoner<100 ) ulTidsiterasjoner += rand()%10;
@@ -68,3 +70,5 @@ class neuroSensor : public neuron{
 
 		friend class synSkilleElement;
 };
+
+#endif

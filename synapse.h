@@ -1,5 +1,6 @@
-//#include "main.h" TODO
+//#include "main.h" XXX
 #include <iostream>
+#include <fstream> 	// filstreams.
 #include <iomanip>
 #include <stdlib.h> 	// for exit()
 #include <list> 	// for list
@@ -9,10 +10,6 @@ using std::list;
 using std::cout;
 using std::endl;
 
-// Seier fra om at kode er kjørt:
-#ifndef SYNAPSE
-    #define SYNAPSE
-#endif
 
 
 
@@ -23,7 +20,7 @@ using std::endl;
 #define DEF_startANTALL_SYN_V 		    	1000
 #define DEF_OPPLADING_AV_S_V_DIVISOR 		35
 #define MAKS_OPPLADNINGSFART_FOR_S_V 		1000
-#define OPPDATERINGS_GRENSE_SYN_V 		20 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
+#define OPPDATERINGS_GRENSE_SYN_V 		7//20 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
 					//XXX skalværeMeir
 
 #define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
@@ -51,6 +48,10 @@ extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres
 
 
 
+#ifndef SYNAPSE_H
+  #define SYNAPSE_H
+  
+  #include "neuroEnhet.h"
 
 
 
@@ -65,12 +66,16 @@ class synapse {
 		const bool bInhibitorisk_effekt;
 		
 		// MA-effekt på reproduksjon, Nei. Men ta med forrige. Tenk meir.
-		int nBestilltReproduksjonAvSvFraForrigeIter;
+		//int nBestilltReproduksjonAvSvFraForrigeIter; Flytta inn i oppdater() som static.
 
-		// uForrigeAntallSynapticV_slept
 		unsigned uAntallSynapticV_sluppet; // Er denne i bruk? XXX
 		// for systemtreighet. ???
 		//Eller finn først ut om dette er veien å gå..
+
+		
+
+		std::ofstream utskriftsFilLogg;
+
 
 
 		void LTP( int nVerdi){
@@ -121,7 +126,7 @@ class synapse {
 		// Det finnes en uTotaltAntallReceptoreIPostsynNeuron_setpunkt; som skal være med å styre variabelen over, når postsyn fyrer.
 		
 		// Følgande er variable ifølge mi tankerekke (HYPOTESE):
-		double dOppladingsFartForSynVesicles; 			// -Er variabel for å ta høgde for potentiation og augmentation..
+		//double dOppladingsFartForSynVesicles; 			// -Er variabel for å ta høgde for potentiation og augmentation..
 		unsigned long ulAntallSynV_setpunkt; 			// -For å variere antall syn.vesicles. Min teori om facilitation/ 
 										// augmentation / korttids potentiation.
 		//double dReproduksjonAvSynV; 		// -For å ha membranstørrelsen variabel.. Sjå (min teori). Trenger også mem. areal-var.
@@ -178,14 +183,12 @@ class synapse {
 			// TRENGER IKKJE loop: for(unsigned int i=0; i<ulKlokketikkSidenForrigeOppdateringTemp; i++ ){
 			// (dette er effekten eg prøver på gjennom kall fra synSkilleElement.oppdater()...)
 
-			// syntese av heilt nye S.V. reproduksjon skal skje seinare plass i koden. 	Veit ikkje om er så viktig med static - timedelay...
+			// SYNTESE:
 			static int snBestilltSynteseAvSVFraForrigeIter = 0;
 			ulAntallSynapticVesiclesAtt += snBestilltSynteseAvSVFraForrigeIter;
 			// (dersom den er negativ, skal denne også sørge for å ta vekk litt syn. v.(sjå slutt av denne funk) )
 
-	//TODO TA MED MEIR TREIGHET HER.
-	//for å få opp syntese, og oversving størrelse..
-	//Kanskje vha ei MA-filter.
+			// REPRODUKSJON:
 			static int snBestilltReproduksjonAvSvFraForrigeIter = 0;
 			// reproduksjon av S.V.
 			ulAntallSynapticVesiclesAtt  += snBestilltReproduksjonAvSvFraForrigeIter;
@@ -235,6 +238,11 @@ class synapse {
 			// Nester iterasjons reproduksjon av S.V. :
 			snBestilltReproduksjonAvSvFraForrigeIter = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
 
+			
+			utskriftsFilLogg<<" " <<ulAntallSynapticVesiclesAtt;
+			utskriftsFilLogg.flush();
+
+
 			return 1;
 		}
 			
@@ -243,11 +251,11 @@ class synapse {
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
 		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
 		synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float v =1 );
+		~synapse();
 		// Denne legger seg automagisk til i postsyn. si innsyn.liste, og presyn. utsyn. liste.
 
 		neuron* pPreNode;
 		neuron* pPostNode;
-
 
 		static list<synapse*>  pNesteSynapseUtregningsKoe;
 		static list<synapse*>  pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
@@ -300,25 +308,16 @@ class synapse {
 */ 
 		// trur ikkje eg trenger returverdi:
 		virtual void aktiviserOgRegnUt();
-	
+		
 		void skrivUt(){ cout<<"tulleutskrift. test.\n"; /**this;*/ }
 		friend std::ostream & operator<< (std::ostream & ut, synapse );
 		friend std::ostream & operator<< (std::ostream & ut, neuron );
 		friend int initArbeidskoer();
 		friend class synSkilleElement;
+
+		friend int main(int, char**);
 };
 
-
-/* *********************************************************************
- * *****     Alternativ er å ha en bool som heiter inhibitorisk,   *****
- * *****       og if(inhibitorisk) signal *= (-1);                 *****
- * *****       Avhengig av kva som er raskest. (peikeroppslag (for *****
- * *****       peiker-funk.),  eller if-setning)                   *****
- * *********************************************************************/ 
-
-#ifndef NEURON
-    #include "neuroEnhet.h"
-#endif
 
 
 
@@ -363,3 +362,5 @@ class synSkilleElement : public synapse {
 
 
 
+    #define SYNAPSE_H
+#endif
