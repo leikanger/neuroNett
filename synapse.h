@@ -20,7 +20,7 @@ using std::endl;
 #define DEF_startANTALL_SYN_V 		    	1000
 #define DEF_OPPLADING_AV_S_V_DIVISOR 		35
 #define MAKS_OPPLADNINGSFART_FOR_S_V 		1000
-#define OPPDATERINGS_GRENSE_SYN_V 		7//20 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
+#define OPPDATERINGS_GRENSE_SYN_V 		7 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
 					//XXX skalværeMeir
 
 #define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
@@ -72,7 +72,8 @@ class synapse {
 		// for systemtreighet. ???
 		//Eller finn først ut om dette er veien å gå..
 
-		
+		int nBestilltSynteseAvSVFraForrigeIter;
+		int nBestilltReproduksjonAvSvFraForrigeIter;
 
 		std::ofstream utskriftsFilLogg;
 
@@ -155,10 +156,10 @@ class synapse {
 				synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
 			}		
 
-///XXX HER XXX
+
 			// Sjekker om den har oppdatert denne iterasjonen:
 			if( ulTimestampForrigeOppdatering == ulTidsiterasjoner ){
-	 			cout<<"\ntimestamp for oppdatering er allerede tatt.\n";
+	 			cout<<"\ntimestamp for oppdatering er allerede tatt (har redan oppdatert denne iter).\n";
 	 			return 1; // eller kanskje noke anna. Bare ikkje 0 som returverdi.
 			}
 			
@@ -184,22 +185,22 @@ class synapse {
 			// (dette er effekten eg prøver på gjennom kall fra synSkilleElement.oppdater()...)
 
 			// SYNTESE:
-			static int snBestilltSynteseAvSVFraForrigeIter = 0;
-			ulAntallSynapticVesiclesAtt += snBestilltSynteseAvSVFraForrigeIter;
+// LÆRT: static er delt mellom alle objekt i klassen:			static int snBestilltSynteseAvSVFraForrigeIter = 0;
+			ulAntallSynapticVesiclesAtt += nBestilltSynteseAvSVFraForrigeIter;
 			// (dersom den er negativ, skal denne også sørge for å ta vekk litt syn. v.(sjå slutt av denne funk) )
 
 			// REPRODUKSJON:
-			static int snBestilltReproduksjonAvSvFraForrigeIter = 0;
+// LÆRT: ....  								static int snBestilltReproduksjonAvSvFraForrigeIter = 0;
 			// reproduksjon av S.V.
-			ulAntallSynapticVesiclesAtt  += snBestilltReproduksjonAvSvFraForrigeIter;
-			ulSynapticVesicles_i_membran -= snBestilltReproduksjonAvSvFraForrigeIter;
+			ulAntallSynapticVesiclesAtt  += nBestilltReproduksjonAvSvFraForrigeIter;
+			ulSynapticVesicles_i_membran -= nBestilltReproduksjonAvSvFraForrigeIter;
 
 			
 			
 			cout 	<<"\n\t\tS.V. " <<ulAntallSynapticVesiclesAtt <<" / " <<ulAntallSynV_setpunkt
-			       	<<"\t| membran:\t" <<ulSynapticVesicles_i_membran <<"\t\t|=|  " <<snBestilltReproduksjonAvSvFraForrigeIter <<" regen. og " 
-				<<snBestilltSynteseAvSVFraForrigeIter <<" er nye. \n"; 
-				//<<(int)(snBestilltReproduksjonAvSvFraForrigeIter+((signed)ulAntallSynV_setpunkt-(signed)ulAntallSynapticVesiclesAtt)*0.05) 
+			       	<<"\t| membran:\t" <<ulSynapticVesicles_i_membran <<"\t\t|=|  " <<nBestilltReproduksjonAvSvFraForrigeIter <<" regen. og " 
+				<<nBestilltSynteseAvSVFraForrigeIter <<" er nye. \n"; 
+				//<<(int)(nBestilltReproduksjonAvSvFraForrigeIter+((signed)ulAntallSynV_setpunkt-(signed)ulAntallSynapticVesiclesAtt)*0.05) 
 
 			cDebug 	<<" ulAntallSynapticVesiclesAtt :        \t" <<ulAntallSynapticVesiclesAtt <<" / " <<ulAntallSynV_setpunkt <<endl;
 
@@ -224,22 +225,22 @@ class synapse {
 			ulTimestampForrigeOppdatering = ulTidsiterasjoner;
 			
 			// Neste iterasjons syntese av S.V. : 	( Lita MA-effekt for å smoothe det ut litt.)
-  			snBestilltSynteseAvSVFraForrigeIter += ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) * 0.25;
-			snBestilltSynteseAvSVFraForrigeIter /= 2;
+  			nBestilltSynteseAvSVFraForrigeIter += ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) * 0.25;
+			nBestilltSynteseAvSVFraForrigeIter /= 2;
 
 			// Dersom den er negativ, halver den. Andre effekter som styrer sletting av s.v. ...
-			if(snBestilltSynteseAvSVFraForrigeIter<0){
-			 	snBestilltSynteseAvSVFraForrigeIter/=3;
+			if(nBestilltSynteseAvSVFraForrigeIter<0){
+			 	nBestilltSynteseAvSVFraForrigeIter/=3;
 				// setter tak for sletting av s.v.
-		 		if(snBestilltSynteseAvSVFraForrigeIter<(-5) )	
-					snBestilltSynteseAvSVFraForrigeIter = -5;
+		 		if(nBestilltSynteseAvSVFraForrigeIter<(-5) )	
+					nBestilltSynteseAvSVFraForrigeIter = -5;
 			}
 
 			// Nester iterasjons reproduksjon av S.V. :
-			snBestilltReproduksjonAvSvFraForrigeIter = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
+			nBestilltReproduksjonAvSvFraForrigeIter = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
 
 			
-			utskriftsFilLogg<<" " <<ulAntallSynapticVesiclesAtt;
+			utskriftsFilLogg<<"\t" <<ulTidsiterasjoner <<"\t" <<ulAntallSynapticVesiclesAtt <<"\t" <<ulAntallSynV_setpunkt <<";\n";
 			utskriftsFilLogg.flush();
 
 
@@ -251,8 +252,10 @@ class synapse {
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
 		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
 		synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float v =1 );
-		~synapse();
 		// Denne legger seg automagisk til i postsyn. si innsyn.liste, og presyn. utsyn. liste.
+
+		// Destructor, for å fjærne seg sjølv fra postsyn.inn-syn-liste, og presyn:utsyn-liste.
+		~synapse();
 
 		neuron* pPreNode;
 		neuron* pPostNode;

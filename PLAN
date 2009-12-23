@@ -1,10 +1,27 @@
 
+Kanskje feilen ligger i static-variabler i objekta. (synapse (snBestilltReproduksjonAvSvFraForrigeIter og snBestilltSynteseAvSVFraForrigeIter ) )
+JESS!
+
+
+
 
 /* ******************************************************************************************************
-********            LAG GRAF-PLOTTER for å sjå om S.V. ser rett ut for facilitation.           **********
+********           Har opdaga at eg trenger destructore fra synapse, til neuron og alle under- **********
+********                klassene til neuron. Ekstra vanskelig/viktig, siden synapsene til eit  **********
+********                neuron kun eksisterer i frie lageret, og er peika på av to neuron.     **********
+********                - Må fjærne begge desse peikere når synapse forsvinner.                **********
+********                - ~synapse skal ferdigstille utskrift til logg-fil.                    **********
+********                                                                                       **********
 ********************************************************************************************************/ 
 
 
+
+
+
+
+/* ******************************************************************************************************
+********            LAG GRAF-PLOTTER for å sjå om S.V. ser rett ut for facilitation.           **********  *** OK ***
+********************************************************************************************************/ 
 
 
 

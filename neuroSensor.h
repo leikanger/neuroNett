@@ -38,7 +38,6 @@ class neuroSensor : public neuron{
 			{ 	leggTilSynapse( pN, vekt );    pNeuroSensorListe.push_back( this );	}
 */
 
-		// XXX  "vekt" er litt utdatert.. mange variable no.. FIX
 		neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig =-1) : 
 								neuron(navn), nFrekvens(nF), nAntallRepitisjonerAvSignal(antallSig) { 
 			//før: leggTilSynapse( pN, vekt );   no:

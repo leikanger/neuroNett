@@ -202,7 +202,7 @@ class neuron {
 		{
 	 
 			// refraction-period for neuron: (ikkje lov å gjøre to fyringer ila. eit sekund.)
-			if( ulTimestampFyring == ulTidsiterasjoner ){ 	cout<<"AVSLUTTER\n\nl.211 i neuronEnhet.hi\n";  exit(-1);/*skal være return 0; */   }
+			if( ulTimestampFyring == ulTidsiterasjoner ){ 	cout<<"Feil?\n\nl.211 i neuronEnhet.hi\n"; return 0;   }
 
 			// Resetter nVerdiForDepolarisering, etter fyring:
 			nVerdiForDepolarisering = 0;
@@ -264,6 +264,36 @@ class neuron {
 			uTotaltAntallReceptoreIPostsynNeuron_setpunkt(1000) 
  		{ } 
 
+		//destructor:
+		~neuron()
+		{
+			//destruerer alle inn-synapser:
+			while( !pInnSynapser.empty() ){
+				cout<<"destruerer syn. fra " <<(*pInnSynapser.begin())->pPostNode->navn <<"\ttil " <<navn <<". \n";
+			 	delete(*pInnSynapser.begin());       
+			}
+			while( !pUtSynapser.empty()  ){ 
+				cout<<"destruerer syn. fra " <<navn <<"\ttil " 	<<(*pUtSynapser.begin())->pPostNode->navn <<". \n";
+			 	delete(*pUtSynapser.begin());       
+
+ 				/*
+				vif( pUtSynapser.empty() )  cout <<"No er pUtSynapser tom. Fett!\n\t"
+								<<"Trenger m.a.o ikkje slette den fra pUtSynapser. l376@neuronEnhet.h\n";
+				*/
+			}
+			/*
+			for( std::vector<synapse*>::iterator iter = pInnSynapser.begin(); iter != pInnSynapser.end() ; iter++ ){
+				pInnSynapser.erase( iter );
+			}
+			//destruerer alle ut-synapser:
+			for( std::vector<synapse*>::iterator iter = pUtSynapser.begin(); iter != pUtSynapser.end() ; iter++ ){
+				pUtSynapser.erase( iter );
+			}*/
+			
+			//evt andre ting
+	 		cout<<"DESTRUERER " <<navn <<endl;
+		}
+
 		// Lag andre construcorer, som er i samsvar med metode for vaksing av n.n. (synapser, postsyn. neuron (t.d. vha. grupperinger av neuron-type 			tatt inn som int, og vokser synapser til nære neuron ut fra kva gruppe det er i (t.d. gruppe 1 vokser til gruppe 1,2  , og gr.2 til 1,2,3)		    eller ulike grupper oppfører seg ulikt, f.eks. en type neuron vokser til alle i nærheten, men ei anna gruppe ikkje vokser uten eksplisitte 			kall.
 		
 
@@ -276,8 +306,8 @@ class neuron {
 	
 		//void leggTilSynapse( synapse * pniNyUt ){ pUtSynapser.push_back(pniNyUt); } //ikkje i bruk enda. Når den blir avkommentert: 
 														// husk nAntallNeuronEgSynapserTil
-		/* * * * * * TODO Ta vekk: TODO * * * * * * * */
-		void leggTilSynapse( neuron* nyttUtNeuron, bool inhib, float vekt =1); 
+		/* * * * * *  Ta vekk: TODO * * * * * * * */ // Det er no nok å skrive new synapse(&preNode, &postNode);
+		//void leggTilSynapse( neuron* nyttUtNeuron, bool inhib, float vekt =1); 
 			// definert i .cpp - fila, pga avhengigheter mellom synapse- og neuron- klassa.
 
 		

@@ -108,12 +108,13 @@ Tenking rundt short-term plasticity:
 	neuron C("C"); // C.leggTilSynapse(&D);
 
 	
-	//neuroSensor( neuron* pN, double vekt, int nFrekvens, std::string navn, int antallSig) : 
 	neuroSensor B( &C, 0.1, 1, "sB", 2); // B.leggTilSynapse(&C);
-	//synapse sBD(&B, &C, true, 0.5 );
-	//synapse sCD(&C, &D);
 
-	
+	//B.leggTilSynapse( &D, false ); Nei. Ny måte: alt blir fiksa i synapse() konstructor..
+	//new synapse( &B, &D );
+	new synapse( &B, &C, true, 0.5 );
+	new synapse( &B, &D );
+
 	// void*(void*) - funksjon. Her går kalkuleringa av listene..	
 	arbeidsKoeArbeider(0);
 
@@ -132,10 +133,6 @@ Tenking rundt short-term plasticity:
 	}
 
 
-	// Quickfix, før eg får til destructor skikkelig.. (dette skal inn i synapse-destructor)
-	synapse* pSyn = (*B.pUtSynapser.begin());
-	pSyn->utskriftsFilLogg << "];\nplot(data)\n"; pSyn->utskriftsFilLogg.flush();
-	//B.pUtSynapser.begin()->utskriftsFilLogg.close();
 
 	return 0;
 }

@@ -32,20 +32,24 @@ unsigned long ulTidsiterasjoner = 0;
 ***                           ***
 ********************************/
 
-// hjelpefunskjon for konstruksjon av neuron:
+/* hjelpefunskjon for konstruksjon av neuron: 	IKKJE LENGER NAUDSYNT. Deprecated.  	Nok å skrive    new synapse( &preNode, &postNode); så blir alt fiksa
+ * 											  i constructor i synapse. Synapsa blir også rydda opp i ~neuron.
+ * 											  	(gå gjerne over dette, og sjekk)
 //
 void neuron::leggTilSynapse( neuron* nyttUtNeuron, bool inhib_e, float vekt)
 { 
 	cout<<"neuroEnhet.cpp l.37 IKKJE I BRUK LENGER\n";
 	exit(-1);
 	pUtSynapser.push_back( new synapse( this, nyttUtNeuron, inhib_e, vekt) ); 
-}
+}*/
 
 
 // constructor:
 synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt /*=false*/, float v /*=1*/ ) :  // v er oppgitt i promille.
 		bInhibitorisk_effekt(argInhibitorisk_effekt),
-		//ulTimestampForrigeSignal( ulTidsiterasjoner ),
+		nBestilltSynteseAvSVFraForrigeIter(0),
+		nBestilltReproduksjonAvSvFraForrigeIter(0),
+		ulTimestampForrigeOppdatering( ulTidsiterasjoner ),
 		ulAntallSynapticVesiclesAtt  (DEF_startANTALL_SYN_V),
 		ulSynapticVesicles_i_membran (0),
 	 	fGlutamatReceptoreIPostsynMem( v ),
@@ -60,25 +64,17 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 	std::ostringstream tempFilAdr;
 	tempFilAdr<<"./datafiler_for_utskrift/synapse_" <<pPreNode->navn <<"-"  <<pPostNode->navn;
 	
+	if(bInhibitorisk_effekt){ tempFilAdr<<"_inhi"; }
+	else{ 			  tempFilAdr<<"_eksi"; }
+
 	std::string tempStr( tempFilAdr.str() );
 
-	cout<<"her1\n";
-
-	cout<<"c string: " <<tempStr.c_str() <<"string: \n" <<tempStr <<endl;
-	
+	// trenger c-style string for open():
 	utskriftsFilLogg.open( tempStr.c_str() );
 	
-	utskriftsFilLogg<<"data = [";
+	utskriftsFilLogg<<"data=[";
 	
 	utskriftsFilLogg.flush();
-}
-
-synapse::~synapse()
-{
-	std::cerr<<"destructor i ~synapse()\n";
-	utskriftsFilLogg<<"]; plot(data)";
-	utskriftsFilLogg.close();
-	exit(-9);
 }
 
 
@@ -215,5 +211,58 @@ void synapse::aktiviserOgRegnUt()
 	/******* oppdaterer timestamp for tidspkt for signal ********/
 	//ulTimestampForrigeSignal = ulTidsiterasjoner;
 }		
+
+synapse::~synapse()
+{
+	bool bPreOk  = false;
+	bool bPostOk = false;
+
+
+	//fjærner seg sjølv fra prenode:
+	for( std::vector<synapse*>::iterator iter = pPreNode->pUtSynapser.begin(); iter != pPreNode->pUtSynapser.end() ; iter++ ){
+	 	if( *iter == this ){
+		       	pPreNode->pUtSynapser.erase( iter );
+			bPreOk = true;
+			break;
+		}
+	}
+	//fjærner seg sjølv fra postnode:
+	for( std::vector<synapse*>::iterator iter = pPostNode->pInnSynapser.begin(); iter != pPostNode->pInnSynapser.end() ; iter++ ){
+	 	if( *iter == this ){
+		       	pPostNode->pInnSynapser.erase( iter );
+			bPostOk = true;
+			break;
+		}
+	}
+
+	if( (!bPreOk) || (!bPostOk) ){
+		/// FEIL:
+		std::cerr<<"\n\n\n\n\nFRIL FEIL FEIL!\nSjekk neuroEnhet.cpp ca. l.250. Feil i synapse destruksjon. (~synapse )\n\n\n\n";
+		exit(-9);	
+	}
+
+	if( ulTimestampForrigeOppdatering < 10 ){
+	 	utskriftsFilLogg <<"0 0 0"; // for å unngå feilmelding om tom vektor, fra octave når det skal plottes..
+	}
+
+	utskriftsFilLogg<<"];\n"
+			<<"plot(data(:,1),data(:,2),  data(:,1), data(:,3) );\n"
+			<<"sleep(3);";
+	utskriftsFilLogg.close();
+
+	/* opning av plot for synapsens syn.v. i octave:
+	std::ostringstream tempFilAdr;
+	tempFilAdr<<"./datafiler_for_utskrift/synapse_" <<pPreNode->navn <<"-"  <<pPostNode->navn;
+	
+	std::string tempStr("octave ");
+	tempStr +=  tempFilAdr.str() ;
+
+	system("tempStr.c_str()");
+	cout<<tempStr <<endl;
+	sleep(4);
+	*/
+}
+
+
 
 // vim:fdm=marker:fmr=//{,//} : fdl=3
