@@ -16,3 +16,5 @@ all: neuroNett.out
 
 clean:
 	rm -f *.out *.o
+
+# *storbox og *litabox (med stjerne på slutten) lager dette, etter mi .vimrc . (med stjerne på slutten og.

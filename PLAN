@@ -1,3 +1,11 @@
+/* ***************************************************************************************************
+********                                                                                    **********
+********    når eg ikkje har noke å gjøre på. Lag logg-systeme også for signalet i postsyn. **********
+********        neuron. Dette kommer til å bli viktig etterkvar, når eg begynner å filosofere ********
+********        på vektendring i form av receptor-endring..                                 **********
+********                                                   TODO                             **********
+******************************************************************************************************/ 
+
 
 Kanskje feilen ligger i static-variabler i objekta. (synapse (snBestilltReproduksjonAvSvFraForrigeIter og snBestilltSynteseAvSVFraForrigeIter ) )
 JESS!
@@ -339,7 +347,7 @@ Motsett eksempel vil involvere center i hjerna der vi trenger rask læring, men 
 
 
 
-
+if int 
 
 
 
@@ -367,3 +375,4 @@ map <c-s> :source ~/.vim/.session <cr>
 
 
 
+// vim: ft=c : ts=2

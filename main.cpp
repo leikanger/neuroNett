@@ -3,6 +3,8 @@
 #include "neuroSensor.h"
 
 
+#define ANTALL_TIDSITERASJONER 100
+
 
 //#include <pthread.h>
 
@@ -35,12 +37,10 @@ list<synapse*>  synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;
 ***	pTempTestSynapse) 				***
 **********************************************************/
 int initArbeidskoer()
-{
-	// Initierer arbeidskø.  Denne trengs ikkje som funskjon i det heile tatt, men skader ikkje..
+{ /* Initierer arbeidskø //{1  } */
+	//  Denne trengs ikkje som funskjon i det heile tatt, men skader ikkje.. 
 	
-	// legger til synSkilleElement sist. 
-	// 	Denne oprettholder sin plass i køa (sist, etter en "iterasjon")
-	
+
 	/* Kontrollerer om den er initialisert fra før: */
 	static bool alleredeInitialisert = false;
 	if( alleredeInitialisert ) return 0;
@@ -53,7 +53,7 @@ int initArbeidskoer()
 	synapse::pNesteSynapseUtregningsKoe  		    .push_back( pHovedSkille );
 
 	return 1;
-}
+} //}
 
 
 /*******************************
@@ -62,7 +62,7 @@ int initArbeidskoer()
 ***       retur:    -        ***
 *******************************/
 int main(int argc, char *argv[])
-{
+{ 
 	
 	
 	
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
 
 /*
-Tenking rundt short-term plasticity:
+Tenking rundt short-term plasticity: //{
 	- Kvar fyring, så sleppes en mengde synaptic vesicles. 
 	- Det blir reprodusert seinare.
 		- (sansynlig vis med forsinkelse, og underdemping)
@@ -86,15 +86,11 @@ Tenking rundt short-term plasticity:
 	- Vi sitter igjen med en (gradvis) økt produksjon av synaptic vesicles. Denne stopper nok ikkje umiddelbart.
 
 	Dette er muligens bakgrunnen for potentiation og augmentation
-
+//}
 */ 
 
 
 	
-
-
-
-
 
 	cout<<"Kommen til neuroNett. \n\n";
 
@@ -108,15 +104,29 @@ Tenking rundt short-term plasticity:
 	neuron C("C"); // C.leggTilSynapse(&D);
 
 	
-	neuroSensor B( &C, 0.1, 1, "sB", 2); // B.leggTilSynapse(&C);
+	neuroSensor B( &C, 0.1, 1, "sB", 3); // B.leggTilSynapse(&C);
 
 	//B.leggTilSynapse( &D, false ); Nei. Ny måte: alt blir fiksa i synapse() konstructor..
 	//new synapse( &B, &D );
-	new synapse( &B, &C, true, 0.5 );
-	new synapse( &B, &D );
+	//new synapse( &B, &C, true, 0.5 );
+	
+	new synapse_likevekt( &B, &D );
 
 	// void*(void*) - funksjon. Her går kalkuleringa av listene..	
 	arbeidsKoeArbeider(0);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  	cout<<"\nFerdig\nAktuelle synapser:\n";
@@ -139,41 +149,12 @@ Tenking rundt short-term plasticity:
 
 
 
-
-/*
- * 		fra partikkel:
-ofstream & useUtskriftsFil( std::string filNavn ="" )
-{ //{4
-
-	static ofstream utskriftsFil( filNavn ); 
-
-	// Unødvendig:
-	if( filNavn !="") //Første gang denne funk kalles	
-	{
-		std::cerr<<"Opner utskrift til alternativ utskrifts(fil) " <<filNavn  <<"\t(SETTER UTSKRIFTSFIL..)\n";
-		utskriftsFil<<"data = [";
-	}else if(filNavn == "avslutt"){
-	 	utskriftsFil<<"]; \n plot(x);";
-	}
-
-	if( !utskriftsFil ){ 
-		std::cerr<<"FEIL Klarte ikkje åpne utskrift(sfil) " <<filNavn <<endl; 
-		exit(-1); 
-	}
-
-	
-	return utskriftsFil;
-} //}4
-*/
-
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  * *   har ikkje gjort noke meir med denne. Dette låg i main før. Har plan om å lage en separat tråd som arbeider med arbeidskø.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  void* arbeidsKoeArbeider(void* ){
-
-	while( ulTidsiterasjoner<100 ){
+//{ planlagt å lage tråd for denne funk. }
+	while( ulTidsiterasjoner<ANTALL_TIDSITERASJONER){
 		if( synapse::pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : l.69\n\n"; exit(-1); }
 	
 		synapse* pSynForste = synapse::pNesteSynapseUtregningsKoe.front();
@@ -209,19 +190,8 @@ ofstream & useUtskriftsFil( std::string filNavn ="" )
 	cout<<"\nTot. element i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe: " <<synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size() <<endl;
 	return 0;
 
-}
+} //}
 
 
+// vim:fdm=marker:fmr=//{,//} : fdl=3
 
-
-
-
-
-
-
-
-
-
-
-
-// vim:fdm=marker:fmr=//{,//}

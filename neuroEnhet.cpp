@@ -38,7 +38,7 @@ unsigned long ulTidsiterasjoner = 0;
 //
 void neuron::leggTilSynapse( neuron* nyttUtNeuron, bool inhib_e, float vekt)
 { 
-	cout<<"neuroEnhet.cpp l.37 IKKJE I BRUK LENGER\n";
+	co ut<<"neuroEnhet.cpp l.37 IKKJE I BRUK LENGER\n";
 	exit(-1);
 	pUtSynapser.push_back( new synapse( this, nyttUtNeuron, inhib_e, vekt) ); 
 }*/
@@ -61,18 +61,19 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 	pPostNode->pInnSynapser.push_back(this );
 	
 
+	// lag ei .oct - fil, og gjør klar for å kjøres i octave:
 	std::ostringstream tempFilAdr;
-	tempFilAdr<<"./datafiler_for_utskrift/synapse_" <<pPreNode->navn <<"-"  <<pPostNode->navn;
-	
+	tempFilAdr<<"./datafiler_for_utskrift/synapse_" <<pPreNode->navn <<"-"  <<pPostNode->navn ;
 	if(bInhibitorisk_effekt){ tempFilAdr<<"_inhi"; }
 	else{ 			  tempFilAdr<<"_eksi"; }
+	tempFilAdr<<".oct";
 
 	std::string tempStr( tempFilAdr.str() );
 
 	// trenger c-style string for open():
 	utskriftsFilLogg.open( tempStr.c_str() );
 	
-	utskriftsFilLogg<<"data=[";
+	utskriftsFilLogg<<"data=[\n";
 	
 	utskriftsFilLogg.flush();
 }
@@ -82,7 +83,7 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 *** Utskriftsprosedyrer: ***
 ***************************/
 std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
-{
+{ //{
 	ut<<"| " <<neuroArg.getNavn() <<"  | verdi: " <<neuroArg.nVerdiForDepolarisering <<" |     Med utsynapser:\n";
 	
 	for( std::vector<synapse*>::iterator iter = neuroArg.pUtSynapser.begin(); iter != neuroArg.pUtSynapser.end(); iter++ ){
@@ -90,22 +91,22 @@ std::ostream & operator<< (std::ostream & ut, neuron neuroArg )
 	}
 
 	return ut;
-}
+} //}
 
 std::ostream & operator<< (std::ostream & ut, synapse synArg )
-{
+{ //{
 	std::string type;
 	if( synArg.bInhibitorisk_effekt ) type = "inhibitorisk"; else type="eksitatorisk";
 
 	ut 	<<*(synArg.pPreNode) <<" synapser til " <<*(synArg.pPostNode) <<"(" <<type <<") med vekt bestemt i postsyn mem. ikkje ferdig."  
 		<<"    Antall syn.vesicles att: " <<synArg.ulAntallSynapticVesiclesAtt <<std::endl;
 	return ut;
-}
+} //}
 
-std::ostream & operator<< (std::ostream & ut, synSkilleElement synSkileE_arg ){
+std::ostream & operator<< (std::ostream & ut, synSkilleElement synSkileE_arg ){ //{
 	ut<<"synSkilleElement.\n";
 	return ut;
-}
+} //}
 
 
 /* ******************************************************************************************************
@@ -116,14 +117,14 @@ std::ostream & operator<< (std::ostream & ut, synSkilleElement synSkileE_arg ){
  * ********                                                                                    **********
  * ******************************************************************************************************/ 
 void synSkilleElement::aktiviserOgRegnUt()
-{
+{ //{
 	// legger meg til bakerst i arbeidskø. (for å holde på "iterasjoner" videre i arbeidskøa)
 	synapse::pNesteSynapseUtregningsKoe.push_back( this );
 	// iterer tid.
 	ulTidsiterasjoner++;
 
 	// utskrift:
-	cout<<"\n\t\t\t\t\t\t\t\tØker tid til:\t" <<ulTidsiterasjoner <<" -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  \n\n";
+	cout<<"\n\t\t\t\t\t\t\t\tØker tid til:\t" <<ulTidsiterasjoner <<" -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  \n";
 
 
 	// Sjekker om frekvens-output-sensore skal fyre.
@@ -146,10 +147,10 @@ void synSkilleElement::aktiviserOgRegnUt()
 	 * Dette gjør at while-setninga over er gyldig.
 	 * ***/ 
 
-}
+} //}
 
 void synapse::aktiviserOgRegnUt()
-{
+{ //{
 	// Implementerer short-term depression ved å legge inn (int dProsentSynapticVesiclesAtt) i neuron-klassa og 
 	//    slepping av maksimalt synVesicles er proposjonalt med denne ( antall sluppetSynV < konst * dAntallSyn... )
 	//    og lineær opplading av dProsentSynapticVesiclesAtt. Denne lineære oppladinga kan kanskje være en del av 
@@ -169,15 +170,17 @@ void synapse::aktiviserOgRegnUt()
 	// 	definert for synapse, og som kan variere med LTP/LTD.
 
 	// sluppet trengs ikkje. Kan for så vidt ha lokal variabel her. Initielt var tanken å ha en liten treighet her. type MA..
-	uAntallSynapticV_sluppet = 0.2 * ulAntallSynapticVesiclesAtt;
+	uAntallSynapticV_sluppet = 0.2 * ulAntallSynapticVesiclesAtt; /// TODO TODO TODO sjå under.
 				//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (membranareal kan øke).
 	
-	cout 	<<" Sendte " <<uAntallSynapticV_sluppet <<" syn.V. " 
+	/*
+	co ut 	<<" Sendte " <<uAntallSynapticV_sluppet <<" syn.V. " 
 		<<"\t(av " <<ulAntallSynapticVesiclesAtt <<")"
 	        <<"\t->  " <<pPostNode->navn 
 		//<<"\t og referansepkt. for antall s.V. " <<ulAntallSynV_setpunkt; //<<"\n"
 		;
-	if( bInhibitorisk_effekt ) cout<<" (inhibitorisk)\n"; else cout<<" (eksitatorisk)\n";
+	if( bInhibitorisk_effekt ) co ut<<" (inhibitorisk)\n"; else co ut<<" (eksitatorisk)\n";
+	*/
 
 	/* Ikkje naudsynt. sluppet = 0.07 * antallAtt (sjå nokre linjer opp..
 	// forsikrer meg om at ulAntallSynapticVesiclesAtt ikkje blir negativ:
@@ -185,15 +188,37 @@ void synapse::aktiviserOgRegnUt()
 		uAntallSynapticV_sluppet = ulAntallSynapticVesiclesAtt; 
 	}*/ 
 
+	mergeSynapticVesicles(); // tar int-argument. Alternativt leser den ut fra klassevariabelen: uAntallSynapticV_sluppet (satt litt lenger opp.)
+	
+	// Legger til synapse i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.
+	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
+	
+
+	/******* oppdaterer timestamp for tidspkt for signal ********/
+	//ulTimestampForrigeSignal = ulTidsiterasjoner;
+} //}	
+
+#define MAX_MEPP_MERGING 2
+
+/***********************************************************
+ * Denne er føkka. Ordne denne slik at den funker bra i nye framgansmåten min.
+ *
+ ***********************************************************/
+void synapse::mergeSynapticVesicles( int antallArg /* =0 */ ){
+	int nTempAntall;
+	if( antallArg ){  if(antallArg>MAX_MEPP_MERGING)nTempAntall = MAX_MEPP_MERGING;
+				else					nTempAntall = antallArg; 	}
+	else 		  	nTempAntall = uAntallSynapticV_sluppet;
+
 	// og trekker fra de brukte syn.vesicles fra ulSynapticVesiclesAtt.
-	ulAntallSynapticVesiclesAtt -= uAntallSynapticV_sluppet;
+	ulAntallSynapticVesiclesAtt -= nTempAntall;
 
 	// Skriver det merger dei inn i membran:
-	ulSynapticVesicles_i_membran += uAntallSynapticV_sluppet;	
+	ulSynapticVesicles_i_membran += nTempAntall;	
 
 
-	unsigned uTempPostsynEffekt = uAntallSynapticV_sluppet * fGlutamatReceptoreIPostsynMem;
-	/******* sender inn *******/ // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
+	unsigned uTempPostsynEffekt = nTempAntall * fGlutamatReceptoreIPostsynMem;
+	//****** sender inn ******* // if-testen er til for å sjå returverdien til sendInnPosts..()  (om postsyn. fyrer)
 	//int nPostsynDepolarisering; <-XXX for seinare fikling med LTP
 	// Sjekker om denne synapsen har inhibitorisk effekt, i såfall send inn negativt signal.
 	if( bInhibitorisk_effekt )
@@ -203,17 +228,10 @@ void synapse::aktiviserOgRegnUt()
 	    //nPostsynDepolarisering = 
 		pPostNode->sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal(        uTempPostsynEffekt );
 	
-	
-	// Legger til synapse i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.
-	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
-	
-
-	/******* oppdaterer timestamp for tidspkt for signal ********/
-	//ulTimestampForrigeSignal = ulTidsiterasjoner;
-}		
+}
 
 synapse::~synapse()
-{
+{ //{
 	bool bPreOk  = false;
 	bool bPostOk = false;
 
@@ -221,7 +239,7 @@ synapse::~synapse()
 	//fjærner seg sjølv fra prenode:
 	for( std::vector<synapse*>::iterator iter = pPreNode->pUtSynapser.begin(); iter != pPreNode->pUtSynapser.end() ; iter++ ){
 	 	if( *iter == this ){
-		       	pPreNode->pUtSynapser.erase( iter );
+	       	pPreNode->pUtSynapser.erase( iter );
 			bPreOk = true;
 			break;
 		}
@@ -229,7 +247,7 @@ synapse::~synapse()
 	//fjærner seg sjølv fra postnode:
 	for( std::vector<synapse*>::iterator iter = pPostNode->pInnSynapser.begin(); iter != pPostNode->pInnSynapser.end() ; iter++ ){
 	 	if( *iter == this ){
-		       	pPostNode->pInnSynapser.erase( iter );
+			pPostNode->pInnSynapser.erase( iter );
 			bPostOk = true;
 			break;
 		}
@@ -242,12 +260,20 @@ synapse::~synapse()
 	}
 
 	if( ulTimestampForrigeOppdatering < 10 ){
-	 	utskriftsFilLogg <<"0 0 0"; // for å unngå feilmelding om tom vektor, fra octave når det skal plottes..
+	 	utskriftsFilLogg <<"0 0 0 0"; // for å unngå feilmelding om tom vektor, fra octave når det skal plottes..
 	}
 
+	// no er data slik: [tid, antall, 		tomme, membran ] i synapse_likevekt..
 	utskriftsFilLogg<<"];\n"
-			<<"plot(data(:,1),data(:,2),  data(:,1), data(:,3) );\n"
-			<<"sleep(3);";
+				<<"plot( data([1:end-1],1), data([1:end-1],2), \";Frie   S.V. i presyn. teminal;\",\n\t"
+	     				<<"data([1:end-1],1), data([1:end-1],3), \";S.V. 2;\",\n\t" 
+					<<"data([1:end-1],1), data([1:end-1],4), \";S.V. 3;\"\t);\n"
+			<<"title \"Synaptic vesicles i presyn. terminal i synapse: " <<pPreNode->navn <<" -> " <<pPostNode->navn <<"\"\n"
+			<<"xlabel Tid\n" <<"ylabel Antall\n"
+			<<"akser=[0 data(end,1) 0 1300]; axis(akser);\n"
+			<<"print(\'eps_" <<pPreNode->navn <<"->" <<pPostNode->navn <<".eps\', \'-deps\');"
+			//<<"print(\'pdf_" <<pPreNode->navn <<"->" <<pPostNode->navn <<".pdf\', \'-dpdf\');"
+			<<"sleep(9);";
 	utskriftsFilLogg.close();
 
 	/* opning av plot for synapsens syn.v. i octave:
@@ -258,10 +284,10 @@ synapse::~synapse()
 	tempStr +=  tempFilAdr.str() ;
 
 	system("tempStr.c_str()");
-	cout<<tempStr <<endl;
+	co ut<<tempStr <<endl;
 	sleep(4);
 	*/
-}
+} //}
 
 
 

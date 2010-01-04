@@ -1,7 +1,6 @@
-//{3
-/*
-Kladd:
 
+//{ Kladd:
+/*
 	Neste store utfordring er korleis gro eit neuralt nettverk, uten å fotfølge algoritmene?
 	- En mulighet er å legge inn sted-koordinater i neuron, ELLER på annen måte dele de opp i gjupper (for kven som kan gro kor). Litt for detaljstyrende
 	- lage eit grovt (ikkje detaljstyrende) overordna system, som bestemmer kva som skal gro med kven.
@@ -14,12 +13,10 @@ Kladd:
 
 
 */
-//}3
+//}
 
-
-//  LÆRING:
 //  Skal eg ha pre- og post- syn. læringseffekt? Eller er dette bare interresant vitenskapelig (årsak bak LTP).
-
+//{ LÆRING:
 /*******************************************************************************************************
  ********************   PLAN, LÆRING:                                                *******************
  ********************                                                                *******************
@@ -74,7 +71,7 @@ Kladd:
  *
  *   -Begynner med statisk E.frekvens.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
+//}
 
 
 
@@ -104,10 +101,9 @@ using std::endl;
 
 #define DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON 0.96 // for eksempel..         (ganger med denne faktoren per klokketikk) 
 
-//#define REFRACTION_PERIOD_TID_ITER 2
-
-
 #define TERSKEL_DEFAULT 100
+
+
 
 // klasse-deklarasjoner:
 class synapse;
@@ -117,10 +113,10 @@ class arbeidsHistorieElement;
 
 // globale variabelDeklarasjoner:
 extern unsigned long ulTidsiterasjoner;
-//extern list<synapse*> 		    pNesteSynapseUtregningsKoe;
-extern list<arbeidsHistorieElement*> pArbeidsHistorieListe;
+//extern list<synapse*> 		    pNesteSynapseUtregningsKoe; Flytta inn i synapse-klassa som static
+extern list<arbeidsHistorieElement*> pArbeidsHistorieListe; // ikkje noke serlig i bruk. Kan ta vekk.
 
-extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres her.
+extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres her. //Kan puttes inn som static i klassa.
 
 
 #ifndef NEUROENHET_h
@@ -167,19 +163,19 @@ class neuron {
 		virtual int sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( int nInnsignalArg )
 		{
 
-			int foerTidSig = nVerdiForDepolarisering; 		// for utskrift.
+			//int foerTidSig = nVerdiForDepolarisering; 		// for utskrift.
 			kalkulerDegraderingAvVerdiPaaGrunnlagAvTimestampSidenSist();
-			int etterTidSig = nVerdiForDepolarisering; 	 	// for utskrift.
+			//int etterTidSig = nVerdiForDepolarisering; 	 	// for utskrift.
 			
 			// Legger til verdi.
 			nVerdiForDepolarisering += nInnsignalArg;
 			
-			// utskrift:
+			/* utskrift:
 			//if( ulTidsiterasjoner % 1000 == 0){
 			cout<<" Verdi ( før-tid | etter-tid ... ) :\t:\t" ; 	cout.width(8);
 			cout<<std::left <<foerTidSig; 	                     cout<<"    |    ";  cout.width(8); cout<<etterTidSig;
 			cout<<" \t+\t"; cout.width(8); cout<<nInnsignalArg; cout<<" \t=>\t";  cout.width(8); 	cout<<nVerdiForDepolarisering <<"\n";
-			//}
+			//} */ 
 
 			// tilordner tempklokke til timestamp for verdien for nVerdiForDepolarisering (neuron::timestamp_forrige_input)
 			ulTimestampForrigeInput = ulTidsiterasjoner;
@@ -202,7 +198,11 @@ class neuron {
 		{
 	 
 			// refraction-period for neuron: (ikkje lov å gjøre to fyringer ila. eit sekund.)
-			if( ulTimestampFyring == ulTidsiterasjoner ){ 	cout<<"Feil?\n\nl.211 i neuronEnhet.hi\n"; return 0;   }
+			if( ulTimestampFyring == ulTidsiterasjoner ){ 	
+				cout<<"Feil?\n\nTo fyringer på eit sekund.  l.211 i neuronEnhet.h\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"; exit(-9); return 0; }
+
+				cout 	<<"\n*************************************************************************** * * * ****************************************************************\n* * * * * * * * * ** ** ** **** *******           neuron  " <<navn <<"          ******** ***** *** ** ** * * * * * * * * * * * * * * * * * * * * * *\n**************************************************** * * * *****************************************************************************************\n"; 
+					       
 
 			// Resetter nVerdiForDepolarisering, etter fyring:
 			nVerdiForDepolarisering = 0;
@@ -216,6 +216,7 @@ class neuron {
 	
 			// TODO Legg også inn litt LTP i kva synapse. TODO
 			// Er i gang med å lage engen LTP / homoD funksjon. kall her, dersom det skal skje..
+			// vha. tilsvarande opplegg som over. for allt pInnSynapser - kjør ltd-og-ltp funksjon. XXX XXX
 			
 			// Setter timestamp for fyring:
 			ulTimestampFyring = ulTidsiterasjoner;
@@ -240,7 +241,6 @@ class neuron {
 		 	// returnerer depolarisertings-verdi. Dersom den er over terskel, returneres -1.
 
 			if( nVerdiForDepolarisering > nTerskel){
-				cout 	<<"\n\n* * * * * * * * * ** ** ** **** *******           neuron  " <<navn <<"          ******** ***** *** ** ** * * * * * * * * * * * * * * * * * * * * * *\n\n";
 
 				return -1;
 		 	}else
