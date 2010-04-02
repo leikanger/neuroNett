@@ -11,7 +11,7 @@
 #ifndef NEUROSENSOR_H
   #define NEUROSENSOR_H
 
-  #include "neuroEnhet.h"
+  #include "neuron.h"
 
 /*************************************************************
 ****    neuroSensor - klasse for generering av signal for ****
@@ -61,7 +61,6 @@ class neuroSensor : public neuron{
 			{
 				fyr();
 				nAntallRepitisjonerAvSignal --;
-				cout<<"fyrer " <<navn <<"\n";
 			}
 		}
 

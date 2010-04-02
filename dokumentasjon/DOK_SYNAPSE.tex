@@ -1,0 +1,24 @@
+
+\chapter{synapse}
+
+Skrive litt om korleis det er lagt opp for constructor/destructor.
+%\section{}
+
+
+\section{synapse::synapse( neuron * , neuron  * , bool , float)}
+a :  * \\
+synapse::synapse( neuron *  pPreN\_arg, neuron  *  pPostN\_arg, bool argInhibitorisk\_effekt / * =false * /, float v / * =1 * / )\\
+Constuctor. Lager synapse, med alt som trengs, deribland legger seg til i synapse-listene i pre- og post- synaptisk neuron.
+\begin{description}
+	\item[neuron *  pPreN\_arg] Neuron *  til presynaptisk neuron. Dette lagres i synapse::pPreNode, og som element i presyn. neurons neuron::pUtSynapser [vector]
+	\item[neuron *  pPostN\_arg] Neuron *  til postsynaptisk neuron. Dette lagres i synapse::pPostNode, og som element i postsynapsens neuron::pInnsynapser
+\end{description}
+
+\section{synapse::\~synapse}
+Destructor skal sørge for at synapse blir fjærnet fra presynapsens og postsynapsens ouput/input vector (de som holder styr på alle synapsene til neurona, input og output). Har slitt litt med dette i dag, men endte opp med å skrive ekstern handtering (for spesialtifellet: ~neuron -- da skal synapsen slettes (frigjøre det frie lageret), presynapsens liste over outputsynapser skal endres, postsynapsens liste skal rettes. Lagde ei løysing i ~neuron, som fungerer godt, men med litt minnelekasje (har ikkje frigjort minnet / ikkje kjørt delete() ).
+
+
+			\begin{description}
+				\item[ein] jejejej jelja øleskjfda øskdj ølkejrweø 
+				\item[to] jlaksejør aøl dskjfø xcnv.,amnerøw
+ 			\end{description}

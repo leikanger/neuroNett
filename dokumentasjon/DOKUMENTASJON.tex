@@ -1,0 +1,298 @@
+%\documentclass[a4paper,norsk,11 pt]{article}             
+\documentclass[norsk,11 pt]{report}             
+
+\usepackage[a3paper]{geometry}
+%\usepackage[a4paper, landscape]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[norsk]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{verbatim}
+
+\title{Dokumentasjon for Auron}
+\author{Per R. L.}
+\date{\today}     
+\begin{document}   
+
+%\maketitle
+
+% for å inkludere en seksjon som er utdelt i smådokument: \input{ dokumentNavn }
+
+\chapter{Introduction}
+
+Tester litt \emph{generellt} om \LaTeX \footnote{jejeje, fuck'z off'z!} \\
+\- her og?
+\begin{description}
+\item[første] Første element..  slutt
+\item[andre] Andre element.
+\end{description}
+
+
+
+
+
+\section{TID}
+For å ordne tid, slik at det er avhengig av global tid, eller klokketikk i prosessor, eller andre urelevante faktore, har eg implementert en sceduler for
+Auron. Denne går ut på at ei arbeidsliste holder orden på kva jobber som står for tur. Kvar gang en jobb blir utført, og denne leder til nye jobber,
+blir desse nye jobbane lagt til på slutten av lista. I tillegg har eg eit objekt som har samme type "jobbane" i lista: synapse. 
+	\\Jobbane er av type synapse, og synSkilleElement er av typen synSkilleElement : public synapse ; 
+
+Videre er funskjonen void regnUt() overloada, slik at ulike handlinger utføres når *arbeidslista->regnUt() kalles.
+Desse funskjonane er:
+\begin{itemize} 	%eller [itemize] i berland-dokument.. Sjekk og [descripiton]
+\item	Øker tid med en. (Tid er en integer med discrete hopp).
+\item	Legger peiker til seg selv (objektet) til bakerst på arbeidslista.
+\item Sjekker om noken av neuroSensor-ane skal fyre (basert på frekvensen de skal fyre med, som igjen skal være basert på tilstand til måleverdi)
+\end{itemize}
+
+Eg hadde i utgangspunktet tenkt å implementere ei arbeidshistorie-liste også, som skulle brukes til å beregne frekvens og lignande, men gjekk vekk fra dette
+siden eg ikkje fikk til en tilfredsstillande "momentan-frekvens". Dette er forsåvidt (nesten) en selvmotsigelse. Vanskelig.
+Istadenfor går løsninga mi ut på å vente i 1/frekvens tid mellom kvart signal. Dette er nermaste eg kommer momentanfrekvens.
+
+
+\section{NEURON:}
+
+
+\section{SYNAPSE:}
+Synapse ligger mellom to neuron, som det gjør i virkeligheten. Kvart synapse-objekt har to neuron-peikera, en til presyn. og en til postsyn.
+Er ikkje sikker på korleis dette opprettholdes, eller blir initiert/destruert. Finn ut og skriv dette avsnittet.
+	\subsection{SYN DEPRESSION: (short time)}
+	Har implementert ulAntallSynapticVesiclesAtt, og at denne er viktig for overføring av signal til postsyn. neuron. Det som blir sendt over, blir 
+	trekt fra synapsens beholdning. Det er prosentvis sending av syn.vesicles, så når synapsen er halvtom, vil halvparten av signalet sendes.
+	Reproduksjon av syn. vesicles er dynamisk ved variabelen dOppladingsFartForSynVesicles (for tida ikkje dynamisk (i endring), men dette er plan.)
+	
+	Dette er med andre ord (short-time) presynaptisk plasticitet.
+
+
+	\subsection{LTP og homoLTD:}
+	Akkurat no driver eg å sysler med LTP og homoLTD. Dette har eg tenkt å implementere fra synapsens regnUt()-funksjon. Når den er ferdig med å regne ut
+	en verdi, skal dette sendes inn i postsynaptisk neuron. Funksjonen for dette returnerer en integer for kor depolarisert den er. Dette har eg planer 
+	om å ta med i avgjersla om LTP og homoLTD skal initieres. 
+		\subsubsection{homoLTD:}
+		Dette er foreløpig en passiv funkson der vekta "lekker litt", vurderer å gi den økande derivert (lekke raskare og raskare ved påfølgande LTD)
+		Vektendring går i første omgang på dGlutamatReceptoreIPostsynMem, og enventuelt etter kvar på min teori om 
+		antall synapticVesicles, størrelse på membran, med variabelt setpkt. Men dette kommer nok seinare.
+		\subsubsection{STDP:}
+		spike time-dependent plasticity. Lær om dette først, så implementer det.
+
+	\subsection{VEKTENDRING:}
+		i første omgang går dette på homo-måten ( på samme synapse ). 
+		\begin{itemize}
+			\item Dersom ei synapse fyrer, og postsyn er kraftig depolarisert, vil LTP oppstå.
+			\item Dersom ei synapse fyrer, og postsyn er passiv (ikkje kraftig depolarisert) vil LTD.
+			\item LTD vurderer eg å ha med alltid, kvar gang ei synapse er aktiv. Spørsmålet er om eg skal ha konstant LTD-rate, eller om denne skal
+			økes ved gjenntatte LTD-kall.
+
+			\item etterkvart STDP.
+		\end{itemize}
+
+
+
+Har også såvidt begynt med historie av arbeid. Ideen var at jobbane skulle flyttast over hit, når de var gjort. Dette har eg ikkje gjort så mykje med, og er 
+ikkje sikker på om det er en god ide, eller ikkje. Greit nok med "momentan frekvens", men kanskje eg har bruk for frekvens-over-lang-tid. Skal prøve å unngå.
+
+
+%Skriver utgåande om tid, og kva eg har gjort for å få til denne, og optimaliseringa:
+\input{DOK_TID}
+
+%Skriver utgåande om neuron, og tidsvariansen i depol. (leaky integrator), og DA (også leaky) - for LTP/LTD balansen.
+\input{DOK_NEURON}
+%Skriver utgåande om synapse, (arbeidskø?), (evt. om presyn. plasticitet(syn.Vesicles) ), ++ 
+\input{DOK_SYNAPSE}
+
+
+\input{DOK_SYN_PLASTICITET}
+
+
+
+%\chapter{Tid}
+%Når det gjelder tid, så har eg også tatt med dette i universet mitt (simuleringsuniverset). Neurona/synapsene er tidsvariante (bruke tid for å lades opp). Denne tida er ikkje avhengig av processor-tics, eller UTC, men av andre ting i simuVerset eg har laga. Løysinga mi var å lage en scheduler, som også lager discrete tidsiterering.
+%\section{Scheduleren}
+%I utgangspunktet var planen å lage eit system for sekvensen / kausaliteten i Auron-nettet mitt. Møtte raskt på problematikk med å la alle neurona som skulle fyre før neuron A, fyre, før A.
+
+%Foreløpig løysing er basert på ideen om to køer, der kjøringa av de to køene altererer, når ei kø er ferdigkjørt. Køene inneholder jobber, i form av synapse*. Alle arvtakera etter class synapse har funksjonen aktiviserOgRegnUt(). 
+%\begin{itemize}
+%	\item I vanlige synapser, vil dette føre til:
+%		\\ - oppdatering av presyn. og postsyn. neuron ( oppdatering av [depolarisasjon, DA, anna] på grunnlag av tid siden sist oppdatering), 
+%		\\ - synaptisk overføring -> EPSP / IPSP
+%		\\ - LTP/LTD (synaptic plasticity)
+%	\item I synSkilleElement er aktiviserOgRegnUt overlagra, og kjører isteden en funk som: 
+%		\\ - itererer tid. 
+%		\\ - oppdaterer alle synapser i pNesteSynapseSomIkkjeErFerdigOppdatert.
+%		\\ - holder orden på alle neuron i pNesteFyringForNeuron. Dersom ett er ført opp til å fyre neste iterasjon, legges det til i pNesteSynapseUtregningsKoe (og vil fyre på slutten av neste iterasjon).
+%\end{itemize}
+
+
+
+\chapter{Variabler og funksjoner - global}
+\section{global:}
+	\begin{description}
+		\item[void* arbeidsKoeArbeider(void*)] - \textit{funksjon} \\
+			Har ansvaret for å holde arbeidskø i gang (og iterere tid når synSkilleElement kalles). 
+		\item[ulTidsiterasjoner] - \textit{extern unsigned long} \\
+			Tidspunkt iterert ved synSkilleElement . Sjå "TID" øverst i denne fila.
+	\end{description}
+
+\pagebreak
+
+
+
+
+\chapter{Variabler og funksjoner - neuron}
+	Class neuron - introdusksjon. Her..
+
+	\section{Variabler:}
+		\subsection{protected}
+			\begin{description}
+				\item[nVerdiForDepolarisering] : \textit{int} 		  \hspace{3cm} protected \\
+				Verdi for depolarisering av neuron. Brukes til å kalkulere om neuron fyrer. 
+				\item[ulTimestampForrigeInput] : \textit{unsigned long} \hspace{5cm}	protected \\
+				Tidspunkt for forrige input ved den globale tidsvariablen, som blir iterert i synSkilleElement. (sjå "TID" øverst i fila).
+				Brukes til å regne ut degradering av nVerdiForDepolarisering etter tid, når nVerdiForDepolarisering skal brukes til å beregne noke.
+				\item[ulTimestampFyring]  	 : \textit{unsigned long} \hspace{5cm}	protected \\
+				Tidspunkt for forrige fyring av aksjonspotensial. (sjå "TID" øverst i fila)\\
+				Planlagt bruk er ved STDP og LTP/D.
+				
+				\item[navn] 			 : \textit{std::string} \hspace{4cm}	protected\\
+				navn, i bruk ved utskrift.
+			
+				\item[uTerskel] 		  	:  \textit{unsigned}  	\hspace{3cm}	protected\\
+				Terskel for fyring av aksjonspotensial. Settes i konstruktor, og default satt til TERSKEL\_DEFAULT (akkurat no er denne satt til 100)
+				
+				\item[uTotaltAntallReceptoreIPostsynNeuron\_setpunkt] : \textit{unsigned} \indent - protected \\
+				Planlagt setpkt for antall receptore. Ikkje i gang enda. Akkurat no har eg overgang fra int antallRecepore til float.\\
+				// ta med egenfrekvens også, etterkvart. for now skal denne være konst.
+ 			\end{description}
+		\subsection{public}
+			\begin{description}
+				\item[pUtSynapser og pInnSynapser] : \textit{std::vector <synapse*>} \indent - public \\
+				Holder styr på utsynapser (for å legge til i arbeidskø, når neuron fyrer), og innsynapser (for å utføre hetero-LTD og LTP) 
+				Kanskje \'{o}g STDP.
+	\end{description}
+
+	\section{Funksjoner:  -  	public}
+		
+		\begin{description}
+			\item[neuron\=( std::string n )]   : \textit{constructor} 	- public \\
+				arg : 	std::string \\
+				retur : 	- \\
+				
+				Constructor for neuron.
+				
+			\item[void settInnElektrisitetGjennomProbe( )] 	 		- public 	\\
+				arg: 	void 							\\
+				retur: 	void 						\\
+				funksjon: 	Fører til at neuron fyrer. (For å indusere eit signal, for tesing av neuron..) \\
+		
+		
+			\item[virtual void kalkulerDegraderingAvVerdiPaaGrunnlagAvTimestampSidenSist( )] 			- protected - inIine
+			\item[virtual int sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( int nInnsignalArg )] - protected - inIine
+			\item[virtual int fyr()] 												- protected - inIine
+			\item[virtual int sjekkKorDepolarisertNeuronEr( )] 								- protected - inIine
+ 		\end{description}
+	\section{FRIEND:}
+		\begin{itemize}
+			\item	class synapse
+			\item operator <<( , neuron)
+		\end{itemize}
+
+
+\pagebreak
+
+
+
+
+
+
+\chapter{class synapse:}
+
+	Eg trur desse beskrivelsane er litt utdatert. Lenge siden eg har skrevet på det. Holder på med neuron, no.
+
+
+	\section{Variabler:}
+		\begin{description}
+			\item[bInhibitorisk\_effekt] 	 		: 	\textit{const bool} 	- 	private \\
+		konstant bool som blir initiert ved konstruering av synapse. Bestemmer om synapse er eksitatorisk eller inhibitorisk. Må initieres i constr.
+		Dersom denne er true, har synapsen inhibitorisk effekt.
+		\item[ulTimestampForrigeOppdatering] 		: 	\textit{unsigned long}  - 	private \\
+		Tids-signal for oppdatering av synaptic vesicles (kanskje også for LTP/D, etterkvart)
+		
+		\item[ulAntallSynapticVesiclesAtt] 			: 	\textit{unsigned long} 	- 	private \\
+	        unsignedlong som holder styr på kor mange synaptic vesicles som er igjen i synapsen. Siden eg modellerer det som ei vansøyle/opning nedst,
+		er slepp av syn.vesicles avhengig av kor mange som er igjen. (prosentvis slepp) Dette gir også gradvis depression.
+ 			\begin{itemize}
+				\item Opplading av desse skjer ved to mekanismer i oppdater()
+				\item snBestilltSynteseAvSVFraForrigeIter : Bestillt antall syntese av SV, fra forrige iter. Denne variabelen er smooth-a litt
+				    i tid, vha. ei MA-filter-lignande effekt. ( verdi+=ny, verdi/=2; )
+			 	\item snBestilltReproduksjonAvSvFraForrigeIter : Repoduksjon av S.V. som ligger inne i membran. Denne er ikkje smooth-a, da det 
+			       	    kunne føre til stygge effekter av unsigned sv-i-membran.
+			\end{itemize}    
+
+		\item[fGlutamatReceptoreIPostsynMem] 		: 	\textit{float} 		- 	private \\
+		Effekt (postsyn. invirkning) ved kvar synaptic vesicle. Viktig element i langtids plastisitet i synapsene. Spesielt LTP og heteroLTD.
+
+	%/*	- dOppladingsFartForSynVesicles : 	double  	: 	private
+	%	Mi hypotese: dersom mi hypotese stemmer, så skal det være litt treighet i systemet for opplading av synaptic vesicles. Dette gjør eg ved
+	%	å bruke forrige iterasjons oppladingsfart (eller FIRvariant). Dette gjør at vi får oversving av synaptic vesicles. Dette fører også til
+	%        potentiation.
+	%	/ *Dette er ikkje implementert enda */	
+
+		\item[ulAntallSynV\_setpunkt] 			: 	\textit{unsigned long} 	- 	private \\
+		Mi hypotese: I stadenfor at effekta over står åleine, kan vi innføre variabelt setpunkt for antall synaptic vesicles. Denne kan økes når:
+		presyn.terminal over tid har lite synaptic vesicles. || når presyn.term. har lite s.v. , og postsyn. er sterkt depol || anna?
+		Dette kan bidra til lengre tids augentation. Og kanskje litt på LTP (på hetero-måten).
+		
+		\item[pPreNode] 						: 	\textit{neuron*}  	-  	public \\
+			Peiker på presynaptisk neuron (før synapsen).
+		\item[pPostNode] 	 	 				: 	\textit{neuron*} 		-   	public \\
+			Peiker på postsynaptisk neuron (etter synapsen).
+	\end{description}
+
+
+	\section{Funksjoner:}
+	\begin{description} 
+	 	\item[synapse(char c)] : bInhibitorisk\_effekt(false)  	: 	constructor 	:  	public \\
+
+	 	\item[synapse( neuron* pPreN, neuron* pPostN, bool argInhib =0, float v =1)] 	: \textit{constructor} 	public \\
+ 		arg:        fra-neuron,     til-neuron, inhibitorisk??? , glutamatreceptore \\
+		Gjør standard konstruktorgreier, men i tillegg legger den synapse* til seg sjølv til, i presyn. si pUtSynapser-liste, og i postsyn. si 
+		pInnSynapser-liste. På denne måten holder den automagisk rede på neuron. 
+	
+		\item[void oppdater()] 		: 	void (void) 	: 	private\\
+		Funksjon for opplading av synaptic vesicles. Dette er skal skje kvar tidsiterasjon. Har egen kø for dette: 
+		synapse::pNesteSynapseSomIkkjeErFerdigOppdatert\_Koe. Alle element før synSkilleElement, i denne, skal sjekkes vha. funksjonen oppdater() 
+		Dette gjøres i synSkilleElement::aktiviserOgRegnUt(), kalt fra tidskøa ( pNesteSynapseUtregningsKoe ).
+		Vanlige synapser's oppdater() returnerer 1, mens synSkilleElement::oppdater() returnerer 0. Dette for å kunne gjøre slik: 
+		while(kø->oppdater() ); Da vil skilleElementet kunne skille oppdateringskøa.
+
+		\item[virtual void aktiviserOgRegnUt()] : 	\textit{virtual void(void)} : 	public \\
+		Funksjon som kalles fra neuron, når den fyrer. Regner ut overføringa av signal til postsyn. neuron. Har tatt med synaptic vesicle, med 
+		antall, syntese, regenerering fra membran, for å få med potentation-effekt (teori nr.1 ). Har ikkje tatt med teori nr 2, om at slepping
+		skjer som funk av areal.
+		Grunnen til at den er virtual, er at den overlagres i synSkilleElement, der den gjør alt som skal gjøres mellom kvar tids-iterasjon.
+		Det som er med på å bestemme overføring av signal er:
+			- antall synaptic vesicles i presyn. (har eit heilt maskineri for å ligne bioNeuron)
+			- antall glutamatreceptorer i postsyn mem. (ikkje ferdig implementert. Planlagt viktig i LTP og LTD)
+		- Det er her hovedfunksjonen til synapse regnes ut, som kalkulering av antall syn.v. som skal sleppes, kor mange som er igjen, om effekta er
+		eksitatorisk eller inhibitorisk, oppdatering av antall s.v., osv.
+	\end{description}
+
+
+
+
+	\section{FRIEND}
+		\begin{description}
+			\item[operator<<( , synapse )]
+			\item[synSkilleElement : public synapse]
+		\end{description}
+	
+
+
+Fotnoter\footnote{dette er fotnote} lages slik: \\footnote{Dette er fotnote}
+
+
+%\bibliography{bibliografi}
+%\bibliographystyle{plain}
+\end{document}
+

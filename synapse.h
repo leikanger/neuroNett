@@ -14,7 +14,7 @@ using std::endl;
 
 
 
-
+/*
 
 #define DEF_FORHOLD_FRI_VS_MEM_SV 0.2
 
@@ -25,25 +25,27 @@ using std::endl;
 #define cDebug std::cerr
 
 
-/***************** mykje bås her, no : *******************/
+/ ***************** mykje bås her, no : ******************* /
 
 //#define DEF_OPPLADINGSFART_FOR_SYN_VESICLES 	DEF_startANTALL_SYN_V*0.01
 #define DEF_OVERFOERINGSFAKTOR_FOR_SYN   	1
 #define DEF_startANTALL_SYN_V 		    	1000
 #define DEF_OPPLADING_AV_S_V_DIVISOR 		35
 #define MAKS_OPPLADNINGSFART_FOR_S_V 		1000
-#define OPPDATERINGS_GRENSE_SYN_V 		1//7 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
-					//XXX skalværeMeir
-#define MAX_NEG_SYNTESE_AV_SV 			-3
-#define MAX_SYNTESE_AV_SV 			15
 
 #define LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.05 // Ved LTP...
 #define LTD_hastighet_endringAvAntall_POSTSYN_RECEPTOR  0.07 // Ved LTD...
 
 #define LTP_INITIALISERINGS_TERSKEL 			750 
+*/
+#define DEF_startANTALL_SYN_V 	    	1000
+#define OPPDATERINGS_GRENSE_SYN_V 		1//0.0001*DEF_startANTALL_SYN_V 	//Grense får når syn. skal legges i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe 
+#define MAX_NEG_SYNTESE_AV_SV 		-3
+#define MAX_SYNTESE_AV_SV 			8
 
 // klasse-deklarasjoner:
 class synapse;
+class synapse_likevekt;
 class neuron;
 class neuroSensor;
 class arbeidsHistorieElement;
@@ -65,7 +67,7 @@ extern list<neuroSensor*> pNeuroSensorListe; // extern for at den kan deklareres
 #ifndef SYNAPSE_H
   #define SYNAPSE_H
   
-  #include "neuroEnhet.h"
+  #include "neuron.h"
 
 
 
@@ -82,7 +84,7 @@ class synapse {
 		
 		// MA-effekt på reproduksjon, Nei. Men ta med forrige. Tenk meir.
 
-		unsigned uAntallSynapticV_sluppet; // Er denne i bruk? XXX
+		unsigned uAntallSynapticV_sluppet; 
 		// for systemtreighet. ???
 		//Eller finn først ut om dette er veien å gå..
 
@@ -90,52 +92,255 @@ class synapse {
 		int nBestilltReproduksjonAvSvFraForrigeIter;
 
 		std::ofstream utskriftsFilLogg;
+		std::ofstream PSP_loggFil;
 
 
-/* 	Gammelt drit. Bedre med simulering av hypotese.
- *
-		void LTP( int nVerdi){
-			// XXX Finn ut korleis dette funker. Når du finner ut dette, publiser artikkel, og skriv om denne funskjonen.
+
+
+
+
+
+		/* ******************************************************************************************************
+		 * ********                                                                                    **********
+		 * ********   void longTimeSynPlasticity_VektEndring( int )                                **********
+		 * ********        - Arg: depolarisering for postsyn. neuron.                                  **********
+		 * ********        Kalles ved overføring i synapse. Alternativ syn.plasticity er når syn. har  **********
+		 * ********          vore inaktiv ei stund => LTD.                                             **********
+		 * ********          Dette kan forresten føres inn her også. Eller sjekkes ved overføring...   **********
+		 * ********        Bør kanskje også ha en postsyn. effekt ved heteroLTD.                       **********
+		 * ********                                                                                    **********
+		 * ********        Argumentet deles på TERSKEL_DEFAULT, og dette gir grad av LTP/LTD.          **********
+		 * ********                                                                                    **********
+		 * ******************************************************************************************************/
+
+
+
+
+
+		//XXX Skal være avhengig av DA-mengde i postsyn.(?) neuron. Se XXXX... .cpp
+		void longTimeSynPlasticity_VektEndring( int nPostsynDepolArg ){ 	// Presyn. vektendring i synapse. For eksempel ved 
+														// Endring av setpkt. for antall SV,  eller setpkt. for mem.A.
+													//  - Gjelder både auke og minke i vekt 
+	
+	
+			/* 
+			 * 	- argument gir om det er vektauke eller vektminke, og størrelsen.
+			 * 	  Argument kommer som regel fra returverdi fra sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal(), eller kor depol postsyn. 
+			 * 	  neuron er.
+			 *
+			 * 	- homoLTD skjer når synapsen får returverdi fra sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal(), om kor depolarisert
+			 * 	  postsyn. neuron er. Dette sendes videre hit. ( longTimeSynPlasticity( argument ). argument er returverdi fra sendInnPostsy...()
+			 * 
+			 * 	- LTP skjer med bakgrunn i samme effekt som homoLTD. Dersom postsyn. neuron er sterkt depolarisert, vil LTP initieres (vektauke)
+			 * 	
+			 * 	- heteroLTD skjer 
+			 * 		- når postsyn fyrer, sjekkes timestamp til alle insynapsene, og en verdi blir laga med basis i tidsavviket. Denne verdien
+			 * 		sendes inn hit, som argument.
+			 * 		ELLER (eller kanskje begge?)
+			 * 		- gradvis, når en synapse ikkje er i bruk ? Dette kan ordnes ved at kvar gang en synapse skal brukes, sjekkes timestamp, og
+			 * 		dersom det er lenge siden, skal litt LTD påføres.
+			 * 	
+			 *
+			 * 
+			 * Spørsmål er om det skal påføres umiddelbart, eller om vi skal vente til tidsiterasjonen er ferdig.
+			 * Kanskje ikkje. Dersom eit element er tidligare, fyrte det også tidligare.
+			 *  	Tidlige element, er også tidligare utført, nærmare eit sannt asynkront sys...
+			 *
+			 * STDP - er en direkte følge av at eg bruker grad av depolarisering til å avgjør om vektauke/minke og grad.
+			 */
+
+			// Etabler en standard for argumentet. F.eks. 0-100, eller 0-???. Ved -1, fyrer postsyn. (maks LTP)
+			// Den går mellom 0 og TERSKEL_DEFAULT. Har også definert en define med HALV_TERSKEL_DEFAULT. 
+
+	/*
+	 *
+	 * Kanksje eg bare skal lage en faktor som er ca lik 1.
+	 * Denne faktor ganges med antall SV:
+	 * 	ulAntallSynV_setpunkt *= faktor;
+	 * Faktor varierer med grad av depolarisering i postsyn. neuron etter overføring i synapsen.
+	 *  	- dersom liten depolarisering: minker vekt litt. Faktor er under 1.
+	 *  	- dersom stor  depolarisering: øker faktor litt. Vekta øker da ulineært i forhold til grad av depolarisering.
+	 *
+	 * */
+			int nTempFaktor;
+#define DEF_DIVIDENT_VEKTENDRING_FAKTOR 5
+//  4 => faktor mellom [0.875  1.125] 
+//  5 => faktor mellom [0.9    1.1  ]  		KAN GJØRES MINDRE MED HØGARE FAKTOR.
+
+
+
+
+
+			/*
+			 *
+			 *
+			 *
+			 *
+			 * 	I I I I                 I I I I I I I I I I I I I I I I I             I I I I I I I I I 
+			 * 	I I I I                 I I I I I I I I I I I I I I I I I             I I I I I I I I I I
+			 * 	I I I I                 I I I I I I I I I I I I I I I I I             I I I I I I I I I I
+			 * 	I I I I  					I I I I                           I I I         I I I 
+			 * 	I I I I  					I I I I                           I I I         I I I 
+			 * 	I I I I  					I I I I                           I I I         I I I 
+			 * 	I I I I  					I I I I                           I I I I I I I I I I 
+			 * 	I I I I  					I I I I                           I I I I I I I I I I 
+			 * 	I I I I  					I I I I                           I I I I I I I I I  
+			 * 	I I I I  					I I I I                           I I I I
+			 * 	I I I I  					I I I I                           I I I I
+			 * 	I I I I  					I I I I                           I I I I 
+			 * 	I I I I I I I I I                   I I I I                           I I I I 
+			 * 	I I I I I I I I I                   I I I I                           I I I I 
+			 * 	I I I I I I I I I                   I I I I                           I I I I 
+			 *
+			 *
+			 *
+			 *
+			 * 	Dynamisk LTP (og dermed synaptisk vekt / minke) er styrt herifra, siden vi har LTD også, kvar overføring (pluss tidsfratrekk av vekt)
+			 * 		- LTD er foreløpig statisk, men det er mulig dette er styrt i biologiske system. Mulig FORENKLING: Statisk LTD!
+			 * 	
+			 * 	Denne skal styrest ved at vi ganger postsyn. depolarisering med en faktor gitt av mengde dopamin i neuronet. 
+			 * 	DA-mengde kan tenkes på som eit kar med dopamin, som blir fyllt fra eit DA-neuron med tonisk egenfyring. Denne fyller på DA-mengden
+			 * 	  i neuronet. Ved pause i DA-leveransen, vil reservoiret tømmes, og for ei stund vil LTP minke, og vi får netto vektminke i in/output
+			 * 	(DA påvirker vekt i inn-syn. OG ut-syn.? Dette vil endre når det fyrer, men også kven det fyrer til.. Tenk meir på dette)
+			 *
+			 * 	XXX XXX XXX Kor skal vi sjå på mengde DA?  DA-mengde i presyn., eller postsyn. neuron?
+			 *
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 * 	TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			 *
+			 */
+			if( nPostsynDepolArg == -1 ){
+	 			// Maks LTP
+	 		 	nTempFaktor = 	( HALV_TERSKEL_DEFAULT 				/ (DEF_DIVIDENT_VEKTENDRING_FAKTOR*TERSKEL_DEFAULT)) +1; 
+										//Samme som absolutt maks, lenger ned..
+				// Kommer etterkvart:
+				///* Postsyn.:*/ 	fGlutamatReceptoreIPostsynMem *= ...
+			}else{
+				nTempFaktor = 	((nPostsynDepolArg-HALV_TERSKEL_DEFAULT) / (DEF_DIVIDENT_VEKTENDRING_FAKTOR*TERSKEL_DEFAULT) ) +1; 
+										// dersom arg = HALV_TERSKEL_DEFAULT -> faktor=1
+			}
+
+			// nTempFaktor er no mellom (ved DEF_DIVIDENT_VEKTENDRING_FAKTOR  5)  :   0.9 og 1.1.
+			ulAntallSynV_setpunkt *= nTempFaktor;
 			
-			// Finn ut om vektendring er omvendt proposjonalt avhengig av tidsintervallet.
-		
+ 			// Denne er > 1 dersom nPostsynDepolArg > HALV_TERSKEL_DEFAULT, og under ellers. Kan droppe if-setning..
+
+
+
+
+
+			// Skal eg vidare dele det opp i :
+				// Presyn. effekt: 			**************
+			
+				// Postsyn. effekt: 			**************
+
+
+			// XXX ANGÅENDE VEKTENDRING:
 			// Veit ikkje korleis, men trur at effekta er at 
 			// 					- antall synaptic vesicles øker?
 			// 					- presyn. membran-areal øker
 			// 					- receptorer i posts. øker (veit at responsen til en bestemt mengde n.t. øker..)
-			
-
-
-			// Begynner med å implementere øking av dGlutamatReceptoreIPostsynMem.
-			// Vil lage en slags "sigama-funk for dette. også som arg: kor mykje den har økt nylig (type to input på rappen, med depolarisering
-			// på 88 og 92 % skal ikkje føre til to store hopp, men ... Eller skal det kanskje det? Dette viser at denne signalveien er viktig.
-			fGlutamatReceptoreIPostsynMem += (LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR * nVerdi/100) ; //Kvifor /100 ?
-			co ut 	<<"**** * * LTP * * **** \t\t\t\t\t* * * * * LTP * * * * Øker med " 
-				<<LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR <<" * " <<nVerdi <<"% = "
-				<<LTP_hastighet_endringAvAntall_POSTSYN_RECEPTOR * nVerdi/100
-				<<" \tNye verdier er " <<fGlutamatReceptoreIPostsynMem <<" per synaptic vesicle.\t\t\t*" ;
 
 		}
 
-		void homoLTD(){
+			// Finn ut om vektendring er omvendt proposjonalt avhengig av tidsintervallet.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+ *
+ *
+ *  			FUNKER, MEN VIL GJØRE BEDRE! :
+ *
+ *
+ *
+ *
+ */
+		// Skal dette være konst., eller skal presyn. effekt variere med kor mange SV som er merga med mem.? (i såfall fra mergeSynapticVesicles()
+		// Dette kan en legge inn ved eit argument, seinare TODO
+		void homoLTD( int nArgAntallSV_i_mem =0 )
+		{ 	
+			if( !nArgAntallSV_i_mem ){ cout<<"Feil. l136 synapse.h\n"; exit(0); } //nArgAntallSV_i_mem er lik "default presyn LTD";
+
 	 		// Minker med vektene med litt litt litt.
 			// TODO Foreløpig er det konstant endring ved LTD. Gjør det til at det øker men påfølgende LTD ?
-			fGlutamatReceptoreIPostsynMem -= (LTD_hastighet_endringAvAntall_POSTSYN_RECEPTOR / 100);
-			co ut<<"litt homoLTD. => minker vekta litt litt litt. \t\t\t\t\t\t\t\t\t\t*\n";
-
 			//if( uGlutamatReceptoreIPostsynMem == 0) døøø Fjærn synapsen, om den er forr lita vekt på.
+
+
+#define ANTALL_SV_til_LTD_faktor (1/100000)
+//			200 -> * 0.995 => (1-500/100.000)
+
+
+
+	 		// Minker vektene litt. (Skal kalles ved kvar signaloverføring. Evt. kalles også LTP() om postsyn fyrer)
+
+		// To aspekt: presyn.(S.V.) og postsyn.(antall receptorer).
+#define LTD_HASTIGHET_PRESYN_FAKTOR 0.995 
+			// Presyn. :
+			ulAntallSynV_setpunkt *= LTD_HASTIGHET_PRESYN_FAKTOR; // TODO gjør om slik at argument kan takast inn. Sjå ANTALL_SV_til_LTD_faktor over.
+
+#define LTD_HASTIGHET_POSTSYN_FAKTOR 0.99
+			// Postsyn. :
+			fGlutamatReceptoreIPostsynMem *= LTD_HASTIGHET_POSTSYN_FAKTOR;
+
 		}
-*/
 
 
-		//unsigned long ulTimestampForrigeSignal; 	// For ?? 
-		unsigned long ulTimestampForrigeOppdatering; /// Hovedsaklig for å unngå å oppdatere fleire ganger kvar iterasjon..
+
+
+		/****************************************************************************
+		 *
+		 *
+		 *
+		 *                  BESTEM OM EG SKAL OPPDATERE ALLE KVAR ITERASJON, ELLER OM EG SKAL OPPDATERE SOM I NESTE FUNK
+		 *                       (oppdatere alle kvar iterasjon, eller oppdatere på pow-måten når den skal sende signal. Dette er ei utfordring,
+		 *                       men vil gå raskere å simulere i datamaskina..)
+		 *
+		 *
+		 *
+		 *
+		 * XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX 
+		 * XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX 
+		 *
+		 *
+		 * 				DOD TODO TODO
+		 *
+		 *
+		 * ********************************************************************************/
+		// Dersom det er lenge siden sist, skal LTD initialiseres.
+		/*void LTD( unsigned int tidSidenSistSignallering ){
+		
+			ulAntallSynV_setpunkt *= pow( 0.9997, tidSidenSistSignallering );
+		}*/
+
+
+
+		unsigned long ulTimestampForrigeOppdatering; /// Hovedsaklig for å unngå å oppdatere fleire ganger kvar iterasjon.. XXX Nødvendig? ZX XXX
+
+		unsigned long ulTimestampForrigeSignal;
 
 		/*********** For synaptic short-term depression: ***********/
 		
 		// Desse er vedtatt som variable i neurolog-milø. (FAKTA):
-		unsigned long ulAntallSynapticVesiclesAtt; 		// -For synaptic (short term) depression. 
-	       									// Gjør også slepp av s.v. prosentvis (som eit diff-lign. sys.)
+		unsigned long ulAntallSynapticVesiclesAtt; 		// -For synaptic (short term) depression. Gjør også slepp av s.v. prosentvis
+	      unsigned long ulAntallSynapticVesiclesAtt_forrige; 	// - for derivasjon. 					//  (som eit diff-lign. sys.)
 		unsigned long ulSynapticVesicles_i_membran; 		// skal ha mulighet for å reproduseres.
 
 	 	float fGlutamatReceptoreIPostsynMem;				// -Beskriver antall neuroReceptore i postsynaptisk membran.
@@ -155,17 +360,25 @@ class synapse {
 		void mergeSynapticVesicles(int antallArg =0);
 
 
+		const int getKorMangeSVsleppesNo()
+		{ //{ ... }
+			// sluppet trengs ikkje. Kan for så vidt ha lokal variabel her. Initielt var tanken å ha en liten treighet her. type MA..
+			/*uAntallSynapticV_sluppet*/
+			return  (0.1 * ulAntallSynapticVesiclesAtt); /// TODO TODO TODO sjå under.
+				//  | f.eks. *0.07 TODO Dette skal være en variabel, som kan også endres ved LTP (f.eks. membranareal kan øke).
+				//  VARIERER kanskje MED MEM. AREAL!
+		    /*uAntallSynapticV_sluppet = 0.2 * ulAntallSynapticVesiclesAtt; /// TODO TODO TODO sjå under.*/
+		} //}
+
 	
-		// oppdater() :
+		// oppdaterSyn() :
 		// 	arg: 	void
 		// 	retur: 	Returnerer 1 ved suksess. I arva klasser brukes det til annet (f.eks. i synSkilleElement betyr -47 retur at 
-		// 		  den er kalt i eit synSkilleElement. Dette har muliggjør : while( oppdateringskø.front()->oppdater() );
+		// 		  den er kalt i eit synSkilleElement. Dette har muliggjør : while( oppdateringskø.front()->oppdaterSyn() );
 		// Oppdaterer neuron for ny klokkeiterasjon: (lader opp igjen synaptic vesicles i synapse)
 
-		virtual int oppdater()
-		{
-	//		cout<<"\tOPPDATER()";
-	
+		virtual int oppdaterSyn()
+		{ //{ ... }
 			// Dersom den er kalt fra pNesteSynapseSomIkkjeErFerdigOppdatert_Koe (eller første element er denne..)
 			if( this == synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() ){
 				// så fjærner det første element fra oppdateringsliste:
@@ -197,8 +410,9 @@ class synapse {
  * *********************************************************************************************************************************************************/ 
 
 		// 2 element i opplading av synaptic vesicles: syntese, reproduksjon, 
-			// TRENGER IKKJE loop: for(unsigned int i=0; i<ulKlokketikkSidenForrigeOppdateringTemp; i++ ){
-			// (dette er effekten eg prøver på gjennom kall fra synSkilleElement.oppdater()...)
+			
+			// for derivasjon: dAntall = noVerdi - forrigeVerdi
+			ulAntallSynapticVesiclesAtt_forrige = ulAntallSynapticVesiclesAtt;
 
 			// SYNTESE:
 			ulAntallSynapticVesiclesAtt += nBestilltSynteseAvSVFraForrigeIter;
@@ -209,67 +423,81 @@ class synapse {
 			ulAntallSynapticVesiclesAtt  += nBestilltReproduksjonAvSvFraForrigeIter;
 			ulSynapticVesicles_i_membran -= nBestilltReproduksjonAvSvFraForrigeIter;
 
+// Utskrift:
+//cout<<"Repro: " <<nBestilltReproduksjonAvSvFraForrigeIter <<" synth. " <<nBestilltSynteseAvSVFraForrigeIter <<"\t";
 			
-/* //{ utskrift			
-			co ut 	<<"\n\t\tS.V. " <<ulAntallSynapticVesiclesAtt <<" / " <<ulAntallSynV_setpunkt
-			       	<<"\t| membran:\t" <<ulSynapticVesicles_i_membran <<"\t\t|=|  " <<nBestilltReproduksjonAvSvFraForrigeIter <<" regen. og " 
-				<<nBestilltSynteseAvSVFraForrigeIter <<" er nye. \n"; 
-				//<<(int)(nBestilltReproduksjonAvSvFraForrigeIter+((signed)ulAntallSynV_setpunkt-(signed)ulAntallSynapticVesiclesAtt)*0.05) 
-
-			cDebug 	<<" ulAntallSynapticVesiclesAtt :        \t" <<ulAntallSynapticVesiclesAtt <<" / " <<ulAntallSynV_setpunkt <<endl;
-*/ //}
-	
-			if( 		(ulSynapticVesicles_i_membran < OPPDATERINGS_GRENSE_SYN_V)  	&& 
-					( abs(ulAntallSynapticVesiclesAtt-ulAntallSynV_setpunkt) < 3*OPPDATERINGS_GRENSE_SYN_V )   ){
+	// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+	// DENNE FUNKER IKKJE. FIX!	
+		if( 		//(ulSynapticVesicles_i_membran < OPPDATERINGS_GRENSE_SYN_V)  	&& 
+			     	( abs(ulAntallSynapticVesiclesAtt-ulAntallSynV_setpunkt) < 3*OPPDATERINGS_GRENSE_SYN_V ) &&
+			     	( abs(ulAntallSynapticVesiclesAtt-ulAntallSynapticVesiclesAtt_forrige) < 0.5*OPPDATERINGS_GRENSE_SYN_V +0.5 ) ){ //derivert liten.
 	 			// nullstill avviket.
 				cout<<"\n\n\t\tFERDIG\n\n";
-				ulAntallSynapticVesiclesAtt = ulAntallSynV_setpunkt;
+				//sleep(1);
+				ulAntallSynapticVesiclesAtt = 		ulAntallSynV_setpunkt;
+				ulAntallSynapticVesiclesAtt_forrige = 	ulAntallSynV_setpunkt;
 				ulSynapticVesicles_i_membran = 0; /// ?? XXX Kanskje dette skal vekk, etterkvart.
 
 			}else{
-				//co ut<<"\t\tikkje ferdig.\n\n";
 	 			pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
 			}
 
-			/*for å la facilitation "ebbe ut", kjører eg konstant "lekking" av syn.v. (sjekker først om den er ulik 0)
-			if(ulAntallSynapticVesiclesAtt)
-				ulAntallSynapticVesiclesAtt -= 3 ;
-			flytta til syntese-plassen, for å ha %-vis effekt.*/
 			
 			// Oppdaterer timestamp for oppdatering av syn.
 			ulTimestampForrigeOppdatering = ulTidsiterasjoner;
 			
 			// Neste iterasjons syntese av S.V. : 	( Lita MA-effekt for å smoothe det ut litt.)
-  			nBestilltSynteseAvSVFraForrigeIter += ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) * 0.25;
-			nBestilltSynteseAvSVFraForrigeIter /= 2;
+#define MA_EFFEKT_SYNTESE_SV_FILTERSTOERRELSE 2
+			// XXX XXX XXX MA-effekt fører til at syntese aldri blir 0 igjen, etter å vore meir enn null.
+
+  //			nBestilltSynteseAvSVFraForrigeIter = ( (MA_EFFEKT_SYNTESE_SV_FILTERSTOERRELSE-1) * nBestilltSynteseAvSVFraForrigeIter
+  //									+ ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) +0.5 ) ;
+  //			nBestilltSynteseAvSVFraForrigeIter /= MA_EFFEKT_SYNTESE_SV_FILTERSTOERRELSE; //asdfasdf
+
+			// Blir faktisk en del bedre med float:
+			float tempTestFloat = ( (MA_EFFEKT_SYNTESE_SV_FILTERSTOERRELSE-1) * nBestilltSynteseAvSVFraForrigeIter
+									+ /*faktor?*/0.5* ((signed)ulAntallSynV_setpunkt - (signed)ulAntallSynapticVesiclesAtt ) 
+									+0.5 )
+							/ MA_EFFEKT_SYNTESE_SV_FILTERSTOERRELSE ;
+
 
 			// Dersom den er negativ, halver den. Andre effekter som styrer sletting av s.v. ...
-			if(nBestilltSynteseAvSVFraForrigeIter<0){
-			 	nBestilltSynteseAvSVFraForrigeIter/=3;
+			if(nBestilltSynteseAvSVFraForrigeIter>0){
+				nBestilltSynteseAvSVFraForrigeIter = tempTestFloat /*+0.5*/;
+				
+				if(nBestilltSynteseAvSVFraForrigeIter> MAX_SYNTESE_AV_SV ) nBestilltSynteseAvSVFraForrigeIter=MAX_SYNTESE_AV_SV;
+			}else{
+#define DIVISOR_VED_NEG_SYNTESE 8
+			 	nBestilltSynteseAvSVFraForrigeIter = ( tempTestFloat / DIVISOR_VED_NEG_SYNTESE ) -0.5; //runder opp (negativt)
 
 				// setter tak for sletting av s.v.
-//		 		XXX For å sette maks fjerning av nBestilltSynteseAvSVFraForrigeIter
-		 		if(nBestilltSynteseAvSVFraForrigeIter<MAX_NEG_SYNTESE_AV_SV )	
-					nBestilltSynteseAvSVFraForrigeIter = MAX_NEG_SYNTESE_AV_SV;
-			}else{
-				if(nBestilltSynteseAvSVFraForrigeIter> MAX_SYNTESE_AV_SV ) nBestilltSynteseAvSVFraForrigeIter=MAX_SYNTESE_AV_SV;
+		 		if(nBestilltSynteseAvSVFraForrigeIter < MAX_NEG_SYNTESE_AV_SV )
+					{	nBestilltSynteseAvSVFraForrigeIter = MAX_NEG_SYNTESE_AV_SV; 	}
 			}
 
 			// Nester iterasjons reproduksjon av S.V. :
-			nBestilltReproduksjonAvSvFraForrigeIter = (ulSynapticVesicles_i_membran * 0.3   +0.5); //(+0.5) for å runde opp til int over.
+#define REPROFAKTOR_FRA_MEMBRAN_TIL_SV 0.1
+			nBestilltReproduksjonAvSvFraForrigeIter = (ulSynapticVesicles_i_membran * REPROFAKTOR_FRA_MEMBRAN_TIL_SV 	 +0.5);
 
 			
+
+			//{ For S.V. - logg:
 			utskriftsFilLogg<<"\t" <<ulTidsiterasjoner <<"\t" <<ulAntallSynapticVesiclesAtt <<"\t1000\t" <<"\t" <<ulSynapticVesicles_i_membran <<";\n";
 			utskriftsFilLogg.flush();
-
-
+	
+			// PSP - effekt-logg:									//Kor stor er membran?:
+			PSP_loggFil<<"\t" <<getKorMangeSVsleppesNo()*fGlutamatReceptoreIPostsynMem*(1+ ulSynapticVesicles_i_membran/1000) 
+				<<" ;   \t#[potensiellt antallSV slept] * [receptore i postsyn] * [1+ ulSynapticVesicles_i_membran/1000]\n" ;
+			PSP_loggFil.flush();
+			//} 
+			
 			return 1;
-		}
+		} //}
 			
 
 	public:
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
-		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i neuroEnhet.h\n\n\n"; exit(0); } } 
+		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i nexxxxxx\n\n\n"; exit(0); } } 
 		synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float v =1 );
 		// Denne legger seg automagisk til i postsyn. si innsyn.liste, og presyn. utsyn. liste.
 
@@ -285,27 +513,57 @@ class synapse {
 		
 
 
-
-		// ikkje i bruk enda:
-		//double LTP_og_LTD; 	// for å legge til til signal (synaptisk vekt).
-					// Finn ut korleis LTD og LTP sletter kvarandre. Regner med at det er gradvis, og at eg kan bruke kontinuerlig uts.
 	
 
 
 
-
-
-
-
 	
-// 		FOR Når eg begynner på LTP og LTD:	void sjekkSTDP( int valg ) //Spike Time-Dependent(synaptisk) Plastisitet (s 200 i boka) 
+	
 		// trur ikkje eg trenger returverdi:
-		virtual void aktiviserOgRegnUt();
+		virtual void aktiviserOgRegnUt()
+		//void synapse::aktiviserOgRegnUt()
+		{ //{
+			// Implementerer short-term depression ved å legge inn (int dProsentSynapticVesiclesAtt) i neuron-klassa og 
+			//    slepping av maksimalt synVesicles er proposjonalt med denne ( antall sluppetSynV < konst * dAntallSyn... )
+			//    og lineær opplading av dProsentSynapticVesiclesAtt. Denne lineære oppladinga kan kanskje være en del av 
+				// den synaptiske plastisiteten.
+			
+			/*
+			 * HAR Gått ut fra at det er konstant antall neurotransmittore inni syn.vesicles.
+			 * 	Dette kan være feilaktig antagelse..
+			*/
+
+
+
+			/******* Synaptisk depression: ******/ //For å begrense signalet til presyn->maksSignal. Denne er for short-time synaptic depression.
+			/*synapse::*/oppdaterSyn();
+
+			/******* LongTimeSynDepression: *****/ // Ved lite bruk, vil heteroLTD initieres.
+		//XXX	LTD( ulTidsiterasjoner-ulTimestampForrigeSignal ); // Minker vekt på grunnlag av kor lenge det er siden sist signal.
+
+			// Signaloverføring er avhengig av antall receptorer for aktuelle neurotransmittor. Ganger med en variabel
+			// 	definert for synapse, og som kan variere med LTP/LTD.
+
+			// XXX TA VEKK uAntallSynapticV_sluppet ??? (og inn som argument)
+			uAntallSynapticV_sluppet = getKorMangeSVsleppesNo();
+			mergeSynapticVesicles(); // tar int-argument. Alternativt leser den ut fra klassevariabelen: u AntallSynapticV_sluppet (satt litt lenger opp.)
+			
+			// Legger til synapse i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.
+			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
+			
+
+			/******* oppdaterer timestamp for tidspkt for signal ********/
+			ulTimestampForrigeSignal = ulTidsiterasjoner;
+		} //}	
+		
 		
 		friend std::ostream & operator<< (std::ostream & ut, synapse );
 		friend std::ostream & operator<< (std::ostream & ut, neuron );
 		friend int initArbeidskoer();
 		friend class synSkilleElement;
+
+		// For å gi postsyn. neuron mulighet til å initiere LTP/LTD: (protected funksjoner)
+		friend class neuron;
 
 		// Bare mens eg drive å utvikler.
 		friend int main(int, char**);
@@ -323,317 +581,6 @@ class synapse {
 
 
 
-/*
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-/* *********************************************************************
- * *****     class synapse_likevekt : public synapse               *****
- * *****         - for å teste teorien om likevekt mellom s.v.     *****
- * *****           i mem., og frie s.v.                            *****
- * *********************************************************************/ 
-class synapse_likevekt : public synapse{
-	private:
- 		//float f Forhold_frie_vs_membran_SV; Skal ikkje ha..
-		int nSynapticSkall_tommeSV;
-		int nBestiltRefillAvTommeSV;
-
-		int nRaavarer_til_SV_syntese;
-		
-		// denne skal ha funksjon å sette mål for antall SV i mem. Skal oppdateres kontinuerlig, som eit MA-filter av antall SV i mem. 
-		unsigned long ulSynapticVesicles_setpunkt_for_membran;
-
-	public:
-		synapse_likevekt( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float v =1 )
-			: synapse(pPreN_arg, pPostN_arg, argInhibitorisk_effekt , v ), 
-	//		f Forhold_frie_vs_membran_SV(DEF_FORHOLD_FRI_VS_MEM_SV), 
-			nRaavarer_til_SV_syntese(0),
-	     		nBestiltRefillAvTommeSV(0)	
-			{
-				//ulAntallSynapticVesiclesAtt  = (1-DEF_FORHOLD_FRI_VS_MEM_SV) * ulAntallSynapticVesiclesAtt;
-				ulSynapticVesicles_i_membran = ulAntallSynapticVesiclesAtt * /*f Forhold_frie_vs_membran_SV*/DEF_FORHOLD_FRI_VS_MEM_SV ;
-				ulSynapticVesicles_setpunkt_for_membran = ulSynapticVesicles_i_membran;
-
-				nSynapticSkall_tommeSV = ulAntallSynapticVesiclesAtt * 0.1;
-
-				cout<<"\nLager likevekts-synapse, med:\t\tS.V. i mem.:\t" <<ulSynapticVesicles_i_membran <<"\t, frie S.V.: "
-					<<ulAntallSynapticVesiclesAtt <<" osv.\n";
-		
-			}
-	protected:
-		// oppdater() :
-		// 	arg: 	void
-		// 	retur: 	Returnerer 1 ved suksess. I arva klasser brukes det til annet (f.eks. i synSkilleElement betyr -47 retur at 
-		// 		  den er kalt i eit synSkilleElement. Dette har muliggjør : while( oppdateringskø.front()->oppdater() );
-		// Oppdaterer neuron for ny klokkeiterasjon: (lader opp igjen synaptic vesicles i synapse)
-
-
-#define DEF_PLASS_TIL_AV_SV 1000
-		void fabrikk_av_SV( ){
-
-			// Kanskje denne skal være konst stor, og moderert nedover som funk av råvarer?
-			
-#define MAXPRODUKSJON_SV 10
-			int nProduserAntall = MAXPRODUKSJON_SV;
- 			
-			int tempPlass(DEF_PLASS_TIL_AV_SV - (nSynapticSkall_tommeSV+(signed)ulAntallSynapticVesiclesAtt) );
-			if( tempPlass < 0 ){
-	 			// det er ingen plass igjen til nye S.V. :  reduser produksjonen.
-				nProduserAntall += 0.5 * tempPlass; //tempPlass er negativ.
-			}	
-
-			//min-produksjon er 0:
-			// if( nProduserAntall < 0 ) nProduserAntall = 0; Ikkje lenger mulig. Blir gjordt i oppdater()
-			//max-produksjon ?:
-	 	 	//if( nProduserAntall > MAXPRODUKSJON_SV ) 	nProduserAntall = MAXPRODUKSJON_SV;
-#define MAX_SYNTESE_gitt_av_RAAVARER_PROSENT 0.3			 // For eksempel 60% av råvarene.
-			int max_syntese_gitt_av_mengde_raavarer( nRaavarer_til_SV_syntese * MAX_SYNTESE_gitt_av_RAAVARER_PROSENT ) ;
-			if( nProduserAntall > max_syntese_gitt_av_mengde_raavarer ){
-				// Trekk fra halvparten av overskudd over max:
-			 	nProduserAntall -= 0.5 * (nProduserAntall - max_syntese_gitt_av_mengde_raavarer) ;
-			}
-
-			//
-		
-			ulAntallSynapticVesiclesAtt 	+= nProduserAntall;
-			// XXX XXX XXX XXX XXX XXX XXX XXX X Skal være (maksimalt?)  prosent av gjenværande.. : TODO 			TODO
-			nRaavarer_til_SV_syntese 	-= nProduserAntall;
-
-			/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-			 * Bør ha det slik at råvarene blir litt mindre med reproduksjon. Dette gjøres for at eg må ha tilbakemelding fra syn.kløft
-			 * om at postsyn. fyrer. Da går ikkje råvarene tom. Ellers gjør de de, etter potentiation-forløpet.
-			 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-
-#define OVERGANG_TOMME_SV_TIL_FABRIKK_PROSENT 0.2
-			// Korleis får eg nye råvarer.
-			int tempOvergangTommeSV_til_fabrikk = nSynapticSkall_tommeSV * OVERGANG_TOMME_SV_TIL_FABRIKK_PROSENT; 
-			nSynapticSkall_tommeSV  -= tempOvergangTommeSV_til_fabrikk;
-			nRaavarer_til_SV_syntese += tempOvergangTommeSV_til_fabrikk;
-
-			cout 	<<"råvarer til syntese i fabrikk:\t" <<nRaavarer_til_SV_syntese 
-				<<"\tSV skall:\t" <<nSynapticSkall_tommeSV 
-				<<endl;
-		}
-
-		virtual int oppdater()
-		{
-			//{ likt det fra synapse.
-			cout<<"\tOPPDATER()";
-			cout<<"  LIKEVEKT: \tSV i mem: " <<ulSynapticVesicles_i_membran <<" og frie: " <<ulAntallSynapticVesiclesAtt <<"\n";
-			// Dersom den er kalt fra pNesteSynapseSomIkkjeErFerdigOppdatert_Koe (eller første element er denne..)
-			if( this == synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() ){
-				// så fjærner det første element fra oppdateringsliste:
-				synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
-			}		
-
-
-			// Sjekker om den har oppdatert denne iterasjonen:
-			if( ulTimestampForrigeOppdatering == ulTidsiterasjoner ){
-	 			cout<<"\ntimestamp for oppdatering er allerede tatt (har redan oppdatert denne iter).\n";
-	 			return 1; // eller kanskje noke anna. Bare ikkje 0 som returverdi.
-			}
-
-			// alltid legge til synapse tilbake i oppdateringsliste. Endre dette..?.
-			pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back( this );
-
-			// Oppdaterer timestamp for oppdatering av syn.
-			ulTimestampForrigeOppdatering = ulTidsiterasjoner;
-			
-
-			// legger til ekstra steg: tomme SV.
-			nSynapticSkall_tommeSV 		+= nBestilltReproduksjonAvSvFraForrigeIter;  	// TODO fiks MA-filter på smart måte, slik at
-			// gjør dette på anna måte, slik at neste ligning også kan trekke fra tilsvarande: SynapticSkall_tommeSV 	/= 2; // : MA-komponent.
-			ulSynapticVesicles_i_membran 	-= nBestilltReproduksjonAvSvFraForrigeIter;
-
-			// fyller n% av de tomme S.V. med neurotransmittore:
-			ulAntallSynapticVesiclesAtt 	+= nBestiltRefillAvTommeSV;
-			nSynapticSkall_tommeSV 		-= nBestiltRefillAvTommeSV;
-
-
-			fabrikk_av_SV( );
-
-/*
-// bl'æææ:
-			// Neste iterasjons syntese av S.V. : 	( Lita derivat-effekt for å smoothe det ut litt.)
-  			n BestilltSynteseAvSVFraForrigeIter += ((signed)ulAntallSynV_setpunkt - (signed)(ulAntallSynapticVesiclesAtt) ) * 0.25;
-			n BestilltSynteseAvSVFraForrigeIter /= 2;
-
-*/
-
-
-			/**********************************************************************************************************************************
-		
-			*/
-#define ENDRINGSFART_FAKTOR  300 
-/*
-			// XXX XXX XXX XXX XXX XXX XXX 
-			// XXX Skal ikkje være slik, men eg veit ikkje korleis eg vil ha det. Sliten i hodet, no. XXX
-			float fForhold = (float)ulSynapticVesicles_i_membran / ((float)ul AntallSynapticVesiclesAtt + (float)ul SynapticSkall_tommeSV) ;
-			
-			// Tull: (kan takes inn i if-setn., der tempInt står..)
-			int tempInt =  (int)(( (fForhold - DEF_FORHOLD_FRI_VS_MEM_SV ) * ENDRINGSFART_FAKTOR) + 0.5 ) ;
-
-			// Legg begge desse inn i mergeSynapticVesicles(), bare at funk skal også ta hand om signed int. Dette for å gjøre dette:
- 			if( fForhold > DEF_FORHOLD_FRI_VS_MEM_SV ){
-				//XXX her skal det variere med antall sv totalt. og med forhold. = bare med ulSynapticVesicles_i_membran ???
-				n BestilltReproduksjonAvSvFraForrigeIter = tempInt;
-			
-			}else {
-				cout<<"skal gjøre: mergeSynapticVesicles( ... ) M.E.P.P. \n";
-				mergeSynapticVesicles( -tempInt ); // M.E.P.P.
-				// ta den direkte: n BestilltReproduksjonAvSvFraForrigeIter [+=/=] forhold * faktor
-			// faktor skal variere ved LTP/LTD.
-	//XXX sleep(1); // bare for debug..
-			}
-
-*/
-#define REPROD_av_MEM_FART 0.1
-			/* Bestilling blir laga her, og moderert i if(nGjenvaerendePlassTilSV<0) - Eller mao. når det er overskudd av S.V. i presyn. plasma. */
-			nBestilltReproduksjonAvSvFraForrigeIter 	+= ulSynapticVesicles_i_membran * REPROD_av_MEM_FART ; // En viss prosent av membran.
-			nBestilltReproduksjonAvSvFraForrigeIter 	/= 2; 								// MA-effekt, for å smoothe..
-				// TULL: (signed)(ulSynapticVesicles_setpunkt_for_membran-ulSynapticVesicles_i_membran)   * 	REPROD_av_MEM_FART;
-
-			/*
-			 * Fiks nBestilltSynteseAvSVFraForrigeIter. Gjøre slik at det blir overshoot i antall SV. (presyn. potentiation-effekt)
-			 *	- kanskje ved at nGjenvaerendePlassTilSV bare virker dempande (når den er negativ(overskudd) - i else lenger nede )
-			 *	  => ellers: ikkje med i beregninga.
-			 */
-					
-								//  XXX += ??? XXX eller bare =
-#define SYNTESE_FART_av_SV 0.3
-			int nGjenvaerendePlassTilSV 	=  DEF_PLASS_TIL_AV_SV - (nSynapticSkall_tommeSV + (signed)ulAntallSynapticVesiclesAtt) ;
-			
-			//DETTE ER BARE MAKSVERDIEN. Blir moderert i fabrikk.
-			//nBestilltSynteseAvSVFraForrigeIter 	= 20;  //Setter den til konst høg. Blir moderert i fabrikk()
-					//var: //nGjenvaerendePlassTilSV * SYNTESE_FART_av_SV;
-			cout 	<<"noke..\t\t\t" <<",\trepro: \t\t" <<nBestilltReproduksjonAvSvFraForrigeIter 
-				<<"\t( av mem.:  " <<ulSynapticVesicles_i_membran <<" )\n";
-
-			if( nGjenvaerendePlassTilSV > 0 ){
-				// plass til meir SV.
-			}else{
-				// fullt for SV i presyn.
-				
-				//if( nBestilltSynteseAvSVFraForrigeIter>1 ) nBestilltSynteseAvSVFraForrigeIter += nGjenvaerendePlassTilSV * SYNTESE_FART_av_SV;
-				//nBestilltSynteseAvSVFraForrigeIter *= 0.8; 
-				
-				nBestilltReproduksjonAvSvFraForrigeIter += /* XXX-> */   0.2    *   nGjenvaerendePlassTilSV; //denne er negativ. 
-															// Fører til mindre syntese pga SV-overskudd
-				
-
- 				// M.E.P.P. ? :
-				//mergeSynapticVesicles( -nGjenvaerendePlassTilSV / 100 );
-				cout<<"Overskudd av SV. No burde vi kanskje også hatt MEPP.\n";
-			     	//nGjenvaerendePlassTilSV = 0; ikkje nødvendig..
-			}
-
-
-
-
-
-
-
-
-			//XXX Stabilisering mot likevektspkt. for antall S.V. :
-
-#define FART_PAA_FYLLING_AV_SV 0.10    // 10% 		
-			nBestiltRefillAvTommeSV = FART_PAA_FYLLING_AV_SV * nSynapticSkall_tommeSV;
-		// her er sikkert andre faktore også. Som antall neurotransmittore i plasmaen, osv.. Forenkler.
-
-//*********************************************************************************************************************************************************
-			
-	
-
-
-			// XXX XXX XXX XXX XXX XXX XXX
-#define GRENSE_MEM_PRODUKSJON 0.10 
-			if( (unsigned)nBestilltReproduksjonAvSvFraForrigeIter > ( GRENSE_MEM_PRODUKSJON  * ulSynapticVesicles_i_membran) ){
-				//Denne er feil: Bør heller redusere med prosenter av overproduksjonen..
-#define MINKINGS_PROSENT 0.05
-				// trekker fra % av overskuddet over GRENSE_MEM_PRODUKSJON*ulSynapticVesicles_i_membran
-				nBestilltReproduksjonAvSvFraForrigeIter -= MINKINGS_PROSENT * (nBestilltReproduksjonAvSvFraForrigeIter 
-														- ( GRENSE_MEM_PRODUKSJON*(signed)ulSynapticVesicles_i_membran) 	 );
-				cout<<"\n\n\n\n\n\n\n\nrepro, mem : " <<nBestilltReproduksjonAvSvFraForrigeIter <<" - " <<ulSynapticVesicles_i_membran <<endl;
-			}
-			
-
-
-			//     - %-vis tap av frie S.V. (ta bort de gamle) ( i biosys. , er det kanskje %vis tap - etter tidsforsinkelse, men dette er vanskelig.?)
-
-			// => tar vekk 1 % av S.V.: XXX XXX XXX XXX XXX XXX XXX XXX Viktig effekt! Ta med ZXX XXXX XXX XXX XXX XXX
-			// Størrelsen på %vis forvitring skal kanskje også variere med farta på produksjonen, og om det kommer tilbakemld. fra postsyn. om fyring.
-			// (dette fører til at det tar lenger til får SV som blir produsert da, forvitrer)
-			// DETTE KAN VÆRE VELDIG VIKTIG ÅRSAK TIL OVERSVING, med etterfølgande minking i antall S.V. XXX
-			//ulAntallSynapticVesiclesAtt 	*= 0.99;
-			//nSynapticSkall_tommeSV 	*= 0.99;
-	
-	
-
-
-
-
-			//  TESTER om reproduskjon og refil av tomme SV, ikkje går over antall: (QUICKFIX)
-			if(nSynapticSkall_tommeSV < 0){ nSynapticSkall_tommeSV = 0; cout<<"HOI HOI\n\nMINDREN NULL TOMME SV IGJEN!\n\n\n"; }
-
-
-
-
-
-
-
-			utskriftsFilLogg 	<<"\t" <<ulTidsiterasjoner 	    		<<"\t" 
-						<<ulAntallSynapticVesiclesAtt    <<"\t"    <<nSynapticSkall_tommeSV	<<"\t" <<ulSynapticVesicles_i_membran  <<";\n";
-			utskriftsFilLogg.flush();
-
-			return 1;
-		}
-			  
-};
-
 
 /*******************************************************************************************************
  ********************    class synSkilleElement                                     *******************
@@ -650,22 +597,23 @@ class synSkilleElement : public synapse {
 		// gjør heilt andre ting enn synapse. Heiter det samme pga overloading.
 		void aktiviserOgRegnUt(); // Utleda i neuroEnhet.cpp
 
+
 		// Legger seg sjølv til sist i lista, og returnerer 0 (symboliserer at liste er ferdig (det før skilleelementet) )
-		int oppdater(){ 
+		int oppdaterSyn(){ 
 			// kan være lurt å for sikkerhetsskuld ta med if(pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() == this )  - Men treigare..
 			if( synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() != this ){ cout<<"FEIL synapse.h_52"; exit(-1); }
 			/* IKKJE LØYSING: feilsjekk..  */
 
-			// legg til på slutt:
+			// legg seg til på slutt:
 			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back(this);   	
 			// Fjærner dette element fra oppdateringsliste:
 			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
 
-			return 0;
+			return 0; // Signaller tilbake att dette ikkje er vanlig synapse::oppdaterSyn() (viktig for funksjonallitet til programmet)
 		}
 	       	/* return 0 er heile poenget med int-returverdi her. Skal ret. 0 ved synSkilleElement, og 1 ved vanlig ok
 		 * 	Dersom det er vanlig oppdatering av vanlig synapse, vil den returnere 1, her returnerer den 0, Dette gjør at eg kan kjøre
-		 * 	while( ! (kø++)->oppdater() );  // trur ikkje noke skal gjøres. Kanskje utskrift eller noke..
+		 * 	while( ! (kø++)->oppdaterSyn() );  // trur ikkje noke skal gjøres. Kanskje utskrift eller noke..
 		 */
 
 };

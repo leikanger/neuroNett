@@ -1,5 +1,85 @@
-/* ***************************************************************************************************
-********                                                                                    **********
+
+
+
+
+ 			 ******************************************************************************************************
+			 * 																	*
+			 * 	I I I I                 I I I I I I I I I I I I I I I I I             I I I I I I I I I  		*
+			 * 	I I I I                 I I I I I I I I I I I I I I I I I             I I I I I I I I I I 	*
+			 * 	I I I I                 I I I I I I I I I I I I I I I I I             I I I I I I I I I I 	*
+			 * 	I I I I  					I I I I                           I I I         I I I  	*
+			 * 	I I I I  					I I I I                           I I I         I I I  	*
+			 * 	I I I I  					I I I I                           I I I         I I I 	* 
+			 * 	I I I I  					I I I I                           I I I I I I I I I I 	*
+			 * 	I I I I  					I I I I                           I I I I I I I I I I 	*
+			 * 	I I I I  					I I I I                           I I I I I I I I I  		*
+			 * 	I I I I  					I I I I                           I I I I 			*
+			 * 	I I I I  					I I I I                           I I I I 			*
+			 * 	I I I I  					I I I I                           I I I I 			*
+			 * 	I I I I I I I I I                   I I I I                           I I I I 			*
+			 * 	I I I I I I I I I                   I I I I                           I I I I 			*
+			 * 	I I I I I I I I I                   I I I I                           I I I I 			*
+			 * 																	*
+			 * 																	*
+			 * 																	*
+ 			 ******************************************************************************************************
+
+ Finn ut korleis synaptisk vekendring funker, og bestem / design / planlegg korleis eg skal implementere synaptisk vekt, og plasticity!
+
+*****************************************************************************************************************
+
+Apropos råvarer til SV-fabrikk (to ned), så kan vi implementere dopamin-kretser, som deler ut dopamin til neuron. Dopamin i neuron kan sees på som råvarer
+til SV-fabrikk, som for eksempel aukes ved belønning (beholdning auker, og kanskje egenfyringa til DA-neuronet som forsyner mottakerneuronet). Dette gir at 
+vi får vedvarende større presynaptisk vektauke (SV). 
+ELLER vi kan bare tenke på det som en faktor som endrer syn. vekt:
+
+Ideen er at vi har ei bøtte med DA (på neuron-nivå), som lekker. Når vi får mykje DA, vil dette auke nivået DA for ei stund. Videre kan raten til "tonic" DA-fyring øke i frekvens. Dette gir vedvarende auke i nivået i bøtta. 
+	-> Dette nivået gir oss (iallefall påvirker) evnen til LTP for synapsene til neuronet. (Type presyn. for ut-synapser, og postsyn. for innsynapser)
+		Videre har vi kontinuerlig LTD, så vektendring for kvar [overføring eller tidsenhet] er avhengig av (foreløpig kun) evnen til å ha LTP. 
+	
+
+*****************************************************************************************************************
+
+
+
+
+
+KANSKJE eg skal lange ei std::list med int kor-mange-som-blir-produsert, og at kvar iterasjon tar eg vekk like mange som er øverst på denne produsert-historie-stacken.
+	- Positivt:
+		Kan ha levetid på S.V.
+	- Negativt:
+		Må oppdatere kvar iterasjon (? kanskje eg kan ta vekk øverste, når den brukes. Dersom det ikkje oppdateres, vil ikkje stack minke).
+		
+
+
+
+/* ******************************************************************************************************
+ * 	Eg veit forresten ikkje om det funker for LTP-teorien min. Lag dette først: Dersom postsyn. n. fyrer, skal den gi melding om det til synapsen, som
+skal gi respons til presyn.t. i form av å sleppe meir "råvarer" til SV-fabrikken ut i synaptic cleft. Dette taes inn i presyn., og vi ender opp med meir 
+råvarer i SV-fabrikk. Få dette i orden:
+	- Postsyn. skal gi respons på at den fyrer.
+	- Fyring skal føre til meir råvarer i presyn.t., for ei stund. Slik at evt. mangel på SV gir fin SV-oversving, og MA-effekt fører til større SV-slepp
+		(større mem, eller fleire SV).
+	- 
+
+
+
+
+
+
+
+
+
+
+
+
+Vidare prosjekt:
+      OK - oversving for SV funker bra, men den er for kort for potentiation effekt.**********
+           Dersom eg ganger opp EPSP med membranoverflate, vil det derimot funke bra.*********
+      Dette er nye oppgava. Lag plottemekanisme for effekt til syn.signallering.    **********
+           - Gjerne uten å sende selve signalet..                                   **********
+			==
+* * * * * * ***...
 ********    når eg ikkje har noke å gjøre på. Lag logg-systeme også for signalet i postsyn. **********
 ********        neuron. Dette kommer til å bli viktig etterkvar, når eg begynner å filosofere ********
 ********        på vektendring i form av receptor-endring..                                 **********
@@ -7,12 +87,23 @@
 ******************************************************************************************************/ 
 
 
+
+
+
+
+
+
+
+
+
+
+
 Kanskje feilen ligger i static-variabler i objekta. (synapse (snBestilltReproduksjonAvSvFraForrigeIter og snBestilltSynteseAvSVFraForrigeIter ) )
 JESS!
 
 
 
-
+OK:
 /* ******************************************************************************************************
 ********           Har opdaga at eg trenger destructore fra synapse, til neuron og alle under- **********
 ********                klassene til neuron. Ekstra vanskelig/viktig, siden synapsene til eit  **********
@@ -26,7 +117,7 @@ JESS!
 
 
 
-
+OK:
 /* ******************************************************************************************************
 ********            LAG GRAF-PLOTTER for å sjå om S.V. ser rett ut for facilitation.           **********  *** OK ***
 ********************************************************************************************************/ 
@@ -250,7 +341,6 @@ Basert på dette skal eg IMPLEMENTERE modellen slik:
 	- neuron sjekker alle innsynapser, og sjekker timestamp oppmot no-tid. Dersom timestamps er veldig forskjellige, skal hetero-LTD minke synaptisk vekt
 	minimalt, kanskje "proposjonalt" (ulin funk som går i metning) med tidsavviket.
 
-TODO TODO TODO TODO TODO
 Det er to effekter ved læring / vektendring som eg ikkje har tatt hensyn til enda
 	- STDP (spike time-dependent Plasticity)
 	- presynaptisk effekt ved LTP. Har begynnt litt med synaptic depression (av synaptic vesicle). Min teori: at setpkt endres, og så vidare..
@@ -347,7 +437,6 @@ Motsett eksempel vil involvere center i hjerna der vi trenger rask læring, men 
 
 
 
-if int 
 
 
 

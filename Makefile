@@ -1,5 +1,7 @@
-CFLAGS=-march=core2 -g -O2 -pthread -Wall 
+CFLAGS=-march=core2 -g -O2 -Wall #-pthread
 CPPFLAGS=${CFLAGS}
+
+all: neuroNett.out
 
 neuroNett.out: main.o neuroEnhet.o
 	g++ ${CFLAGS} main.o neuroEnhet.o -o neuroNett.out
@@ -7,12 +9,11 @@ neuroNett.out: main.o neuroEnhet.o
 main.o: main.cpp main.h
 	g++ ${CFLAGS} -c main.cpp 
 
-neuroEnhet.o: neuroEnhet.cpp neuroEnhet.h neuroSensor.h synapse.h
+neuroEnhet.o: neuroEnhet.cpp neuron.h neuroSensor.h synapse.h
 	g++ ${CFLAGS} -c neuroEnhet.cpp 
 c:
 	make clean; echo "\n"; make
 
-all: neuroNett.out
 
 clean:
 	rm -f *.out *.o

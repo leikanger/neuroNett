@@ -1,9 +1,9 @@
 #include "main.h"
-#include "neuroEnhet.h"
+#include "neuron.h"
 #include "neuroSensor.h"
 
 
-#define ANTALL_TIDSITERASJONER 100
+#define ANTALL_TIDSITERASJONER 200
 
 
 //#include <pthread.h>
@@ -14,16 +14,23 @@ void testMain();
 //double sensorFunksjon(double*, double); //test for callback i sensor-klassa.
 
 //globale var.
-pthread_t sig_gen_traad;
+//pthread_t sig_gen_traad;
 
 /**************************
  *** 	Deklarasjoner:	***
  **************************/
 void* arbeidsKoeArbeider(void*);
 
-// Deklarasjon av statiske element i synapse. 
-list<synapse*>  synapse::pNesteSynapseUtregningsKoe;
-list<synapse*>  synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
+// Deklarasjon av statiske element
+// 	- i synapse: 
+extern list<synapse*>  		synapse::pNesteSynapseUtregningsKoe;
+extern list<synapse*>  		synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
+// 	- i neuron:
+extern std::map<neuron*, unsigned> 	neuron::sNesteFyringForNeuron;
+
+//slett:
+//extern vector<synapse*> slett_vpAlleSynapeneSomErContruert;
+
 
 
 
@@ -48,7 +55,7 @@ int initArbeidskoer()
 
 	synSkilleElement* pHovedSkille = new synSkilleElement();
 	
-	// kan bruke samme objekt i oppdateringskø og utregningskø siden desse kaller ulike funksjoner (oppdater() og aktiviserOgRegnUt() )	
+	// kan bruke samme objekt i oppdateringskø og utregningskø siden desse kaller ulike funksjoner (oppdaterSyn() og aktiviserOgRegnUt() )	
 	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe .push_back( pHovedSkille );
 	synapse::pNesteSynapseUtregningsKoe  		    .push_back( pHovedSkille );
 
@@ -63,86 +70,104 @@ int initArbeidskoer()
 *******************************/
 int main(int argc, char *argv[])
 { 
-	
-	
-	
-	
-	//static ofstream utskriftsFil( argv[1] );
-	//utskriftsFil<<"data=["; // fila skal brukes til å plotte data i octave..
-
 
 	// initierer rand() - seed.
 	srand( time(0) );
 
-
-/*
-Tenking rundt short-term plasticity: //{
+/* //{ Tom for kode: utkommentert! --Tenking.
+Tenking rundt short-term plasticity: 
 	- Kvar fyring, så sleppes en mengde synaptic vesicles. 
 	- Det blir reprodusert seinare.
 		- (sansynlig vis med forsinkelse, og underdemping)
-	- Deprevation skjer pga at synapsen går tom for synaptic vesicles.
+	- Deprevation skjer pga at synapsen "går tom" for synaptic vesicles.
 	- Dette vil cella antagelig unngå, for seinare tid, så den setter igang med å produsere meir.
 	- Meir fører til økt trykk i ventilene, og ved kanalåpning vil meir sleppes kvar gang.
 	- Vi sitter igjen med en (gradvis) økt produksjon av synaptic vesicles. Denne stopper nok ikkje umiddelbart.
 
 	Dette er muligens bakgrunnen for potentiation og augmentation
-//}
-*/ 
+*/ //}1 
 
-
-	
 
 	cout<<"Kommen til neuroNett. \n\n";
 
 	initArbeidskoer(); 
 	
+
+	/* *********************************************************************
+	 * *****   Trenger faktisk ikkje å holde styr på neurona.          *****
+	 * *****    bare at                                                *****
+	 * *****                                                           *****
+	 * *****                                                           *****
+	 * *********************************************************************/ 
+	neuron nD("nD");
+	neuron nA("nA");
 	
-	//testMain();
+	synapse (&nA, &nD);
 
 
-	neuron D("D");
-	neuron C("C"); // C.leggTilSynapse(&D);
+
+
+
+
+
+
+
+	//først: få orden på likevekt uten signal.
+	//synapse_likevekt Test(&C,&D);
+	
+	//så: få orden, med signal (facilitation, osv.)
+	//neuroSensor sB( &nD, 0.1, 1, "sB", 3); // B.leggTilSynapse(&C);
+	//neuroSensor sC( &nD, 0.1, 1, "sC", 3); // B.leggTilSynapse(&C);
+	
+	// For testing av syn._likevekt: 
+	//synapse_likevekt synapsa( &sB, &D );
 
 	
-	neuroSensor B( &C, 0.1, 1, "sB", 3); // B.leggTilSynapse(&C);
-
-	//B.leggTilSynapse( &D, false ); Nei. Ny måte: alt blir fiksa i synapse() konstructor..
-	//new synapse( &B, &D );
-	//new synapse( &B, &C, true, 0.5 );
-	
-	new synapse_likevekt( &B, &D );
+	//nD.oppdaterNeuron();
 
 	// void*(void*) - funksjon. Her går kalkuleringa av listene..	
 	arbeidsKoeArbeider(0);
 
 
+	
+
+	//neuron feil("feilNeuron");
+	//neuron::sNesteFyringForNeuron[&feil] = 5;
 
 
+	/*/ Skriver ut alle synapsene:
+	cout<<"\n\nSkriver ut absolutt alle synapsene:\n";
+	vector<synapse*>::iterator iter = slett_vpAlleSynapeneSomErContruert.begin();
+	
+	while( ++iter != slett_vpAlleSynapeneSomErContruert.end() ){
+		cout<<(*iter);
+	}*/
+
+	cout<<"Skriver ut alle synapser til nokre neuron:\n";
+	cout 	<<nA <<"\n"
+		<<nD <<"\n";
+		//<<sC <<"\n";
 
 
+	cout<<"\nSkriver ut sNesteFyringForNeuron : \n";
+	neuron::sSkrivUt_sNesteFyringForNeuron_map();
 
 
-
-
-
-
-
-
-
- 	cout<<"\nFerdig\nAktuelle synapser:\n";
-
+	cout<<"\n\t\tEitt sekunds stillhet for INGEN SEGAULT!\n\n";
+	sleep(1);
+/*
 	for( list<arbeidsHistorieElement*>::iterator i = pArbeidsHistorieListe.begin() ; i != pArbeidsHistorieListe.end(); i++ ){
 	  	cout <<((*i)->arbeidsElement_synP)  <<" er brukt " << (*i)->antallGangerBrukt <<" ganger. \n";
 	}
+*/
 
-	//XXX Funker ikkje heilt, men eg er inne på løysing. Prøv å skrive ut verdien til (*i).
-	cout<<"\n\nog pNesteSynapseSomIkkjeErFerdigOppdatert_Koe:\n";
+	//Funker ikkje heilt, men eg er inne på løysing. Prøv å skrive ut verdien til (*i).
+/*	cout<<"\n\nog pNesteSynapseSomIkkjeErFerdigOppdatert_Koe:\n";
 	for( list<synapse*>::iterator i = synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.begin() ;
 		       	i != synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.end(); i++ ){
 	  	cout <<(*i)  <<"\n------------------------\n";
 	}
-
-
+*/
 
 	return 0;
 }
@@ -155,7 +180,7 @@ Tenking rundt short-term plasticity: //{
  void* arbeidsKoeArbeider(void* ){
 //{ planlagt å lage tråd for denne funk. }
 	while( ulTidsiterasjoner<ANTALL_TIDSITERASJONER){
-		if( synapse::pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : l.69\n\n"; exit(-1); }
+		if( synapse::pNesteSynapseUtregningsKoe.empty() ){ cout<<"\n\n SKAL ALDRI SKJE!  FEIL main.cpp : <asdf166\n\n"; exit(-1); }
 	
 		synapse* pSynForste = synapse::pNesteSynapseUtregningsKoe.front();
 		synapse::pNesteSynapseUtregningsKoe.pop_front(); // tar vekk første element.
@@ -185,6 +210,11 @@ Tenking rundt short-term plasticity: //{
 		}
 
 		if( !bLagtTilIarbeidsHistorie ){ pArbeidsHistorieListe.push_front( new arbeidsHistorieElement(pSynForste) ); 	}
+
+
+		// bare skitten-testing:
+		//if( ulTidsiterasjoner%150 == 0 ) (*pNeuroSensorListe.begin())->settInnElektrisitetGjennomProbe(); 
+
  	} 
 
 	cout<<"\nTot. element i pNesteSynapseSomIkkjeErFerdigOppdatert_Koe: " <<synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.size() <<endl;

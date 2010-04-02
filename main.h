@@ -12,6 +12,7 @@
 #include <cmath> 	// for pow( , )
 
 class synapse;
+class synapse_likevekt;
 class neuron;
 
 
@@ -40,7 +41,7 @@ extern std::ostream & operator<< (std::ostream & ut, neuron neuroArg );
 
 #ifndef MAIN_H
   #define MAIN_H
-  #include "neuroEnhet.h"
+  #include "neuron.h"
 
 
 
@@ -50,12 +51,6 @@ using std::endl;
 
 using std::vector;
 
-
-
-//#define INPUT_TERSKEL 70
-//#define INPUT_KURVEBRATTHET 14
-
-//#define LAERINGSFART_KONST 0.05
 
 
 

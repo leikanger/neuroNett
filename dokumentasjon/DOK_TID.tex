@@ -1,0 +1,26 @@
+
+
+\chapter{Tid}
+Når det gjelder tid, så har eg også tatt med dette i universet mitt (simuleringsuniverset). Neurona/synapsene er tidsvariante (bruke tid for å lades opp). Denne tida er ikkje avhengig av processor-tics, eller UTC, men av andre ting i simuVerset eg har laga. Løysinga mi var å lage en scheduler, som også lager discrete tidsiterering.
+\section{Scheduleren}
+I utgangspunktet var planen å lage eit system for sekvensen / kausaliteten i Auron-nettet mitt. Møtte raskt på problematikk med å la alle neurona som skulle fyre før neuron A, fyrte, før A.
+
+Foreløpig løysing er basert på ideen om to køer, der kjøringa av de to køene altererer, når ei kø er ferdigkjørt. Køene inneholder jobber, i form av synapse*. Alle arvtakera etter class synapse har (overlagra?) funksjonen aktiviserOgRegnUt(). 
+\begin{itemize}
+	\item I vanlige synapser, vil dette føre til:
+		\\ - oppdatering av presyn. og postsyn. neuron ( oppdatering av [depolarisasjon, DA, anna] på grunnlag av tid siden sist oppdatering), 
+		\\ - synaptisk overføring -> EPSP / IPSP
+		\\ - LTP/LTD (synaptic plasticity)
+	\item I synSkilleElement er aktiviserOgRegnUt() overlagra, og kjører isteden en funk som: 
+		\\ - itererer tid. 
+		\\ - oppdaterer alle synapser i pNesteSynapseSomIkkjeErFerdigOppdatert.
+		\\ - holder orden på alle neuron i pNesteFyringForNeuron (``estimert fyringstid''). ---Dersom ett er ført opp til å fyre neste iterasjon, kjøres neuron::oppdater(), og det legges evt. til i pNesteSynapseUtregningsKoe (og vil fyre på slutten av neste iterasjon). Alternativt blir estimat oppdatert.
+\end{itemize}
+Eg bruker ikkje to køer, men ei, med eit spesialelement som er nedarva fra synapse og har en del av funksjonane overlagra: synSkilleElement. Det som skjer, er at det ligger eit synSkilleElement på slutten av lista. 
+Før man kjem dit, har kanskje nye neuron blitt ført til på lista, og vil fyre til neste tidsiterasjon (-etter synSkilleElement; dvs. i neste tidsiterasjon). Når turen kommer til å kjøre synSkilleElement->aktiviserOgRegnUt(), så vil bl.a. tida øke med eit hakk.
+
+Ein annan ting den holder styr på er kva neuron som skal oppdateres, og kjøre oppdater() på desse. Dersom de fyrer, skal de føres opp på arbeidslista på vanlig måte. Dersom de ikkje fyrer, vil oppdater lage eit nytt estimat av når de fyrer, og føre de opp på estimat-lista (neuron.oppdater() holder orden på denne fyrings-estimat-lista).
+
+Grunnen til å ha ei slik fyrings-estimat-liste, er å optimalisere kjøringa uten å ta bort tids-faktore i neuronet (leaky integrator).
+std::map<neuron*, int> sNesteFyringForNeuron heiter estimat-lista.
+
