@@ -1,0 +1,51 @@
+
+\chapter{Videre plan}
+
+Har kommet langt, men har langt igjen før det kan brukes til å oversette signal mellom neurale signal og digitale (data) signal, eller å lage nett--bugs (små ti--talls--tusen--neuron---skapninger som kravler rundt på nettet.
+
+Videre plan:
+
+\subsection{DA}
+Eg har implementert egenfyring for neuron (vha. depol.verdi--lekkasje). Dette kan brukes i DA--neuron, for tonisk leveranse av DA. Videre trenger eg å tenke på korleis implementere:
+	\begin{itemize}
+		\item Pause i DA--leveranse. Korleis holde ``DA--neuron'' i eit bestemt tidsintervall? Korleis holde dette effektivt i forhold til datakraft?
+		\item `Phasic firing' opner for to problemstillinger:
+		\begin{itemize}
+			\item Korleis ordne med rask fyring (maks rate). Kanskje fyre en gang per tidsiterasjon / kvar n--te tidsiterasjon?
+			\item Korleis holde dette i gang i eit bestemt tidsintervall?
+		\end{itemize}
+	\end{itemize}
+Løysinger:
+	\begin{description} 
+		\item [=] Denne første problemstillinga er litt tricky å fikse optimalt. Med en bool: bPause--i--fyringa, kan denne settes ved start og resettes ved stopp av fyringspausa.
+		\begin{itemize}
+			\item Den lettaste måten å gjøre dette er nok at neuronet legges til i ei pause--liste, som sjekkes kvar tidsiterasjon, av synSkilleElement. Når bestillt pause er over(kan sjekkes mot en var. i neuron), vil bPause--i--fyringa settes til false igjen. 
+			\item Bedre måte er å ha ei liste over ``events'' (<neuron*, ul--sjekk--ved--tidspunkt>). Denne sjekkes av tidsSkilleElement, og gjennom neuron--peikeren resettes bPause--i--fyringa til false, når det gitte tidspunkt er nådd. Så er ting normale igjen.
+		\end{itemize}
+		\item [=] Her er andre problemstilling (den med ``phasic firing'') enklere, da den uansett jobber kvar (n-te)\footnote{Dersom den skal sjekke kvar gang, er n=1. Annakvar: n=2, osv.} iterasjon. Kan bare sjekke samtidig.. Ved større n (perioder mellom fyring) kan eg tenke på det når det oppstår...
+	\end{description}
+
+\subsection{Vaksing av neurale nett}
+Det er ikkje bare synaptisk plastisitet som er viktig. Neurale endringer er og essensiellt! Trenger en del mekanismer for å holde neurale nettet bra. Deriblant exitotoxicity (forgiftning ved for mykje eksitering), neurogenese, programmert celledød, .. \\
+Dette systemet må også være i balanse, og eg må finne ut av det sjølv (har ikkje så mykje litteratur å støtte meg til, spesiellt når det gjelder neurogenese). Her må eg finne på korleis det er/ skal være, sjølv.
+Til å starte med, ser eg nokre mekanismer:
+	\begin{description} 
+		\item [+] Trenger mekanismer som auker antall neuron. \emph{NeuroGenesis}. Tenk meir på dette. Sjå også tenkeboka.
+		\item [--] `Survival of the useful'. Bare de neuron som er bruk for, ``overlever''. Inspirert av Darwin.
+			\begin{itemize} 
+				\item Neuron trenger aktivitet for å overleve. Input er viktig, og output er viktig. Dette sa alzheimers-forskaren, at uten neural output (nokon å sende info til) vil også neuron dø. Medverkande årsak til stadig aukande degenerering ved alzheimers'.
+				\item DA -- Kanskje dopamin også har en rolle her. Eg tenker på degenerative effekta av parkinson\footnote{Tap av `substantia nigra' neuron, og omfattende degenerering av motor--neuron}. Videre kan dette også være eit overordna system for neural--dynamikken (dynamikken til nettverk av synaptisk koblinger, og den synaptiske plastisiteten mellom de (LTP/LTD) ), og læring\footnote{Sansynlig etter darwins prinsipp: Neuron som alltid fører til skuffelse (opphold i DA--leveranse) bør daude.}. Viktig ved læring, siden neuron som alltid medvirker til ``skuffelse'', bør krepere. Dette følger darwins tankebaner.
+			\end{itemize}
+	\end{description}
+Ta å sjekk parkinson vs. heroinvrak. Syns å huske at de (symptomene) ligner, nesten til forveksling. \\
+\begin{description}
+	\item[---] Kanskje dette er på grunn av exitoToxicity av DA--neuron ved kronisk heroinbruk? (sett at S.N. har omfattende neuro--degenerering).
+Kva er det i parkinson? For lite aktivitet i overordna DA--leveranse system, som leverer til VTA--neurona? (Gitt hypotesen min om DA som mekanisme for å opprettholde neuron, er rett).
+\end{description}
+\subsection{Etablering av neurale nett}
+Kva mekanismer er med i dannelsen av neurale nett? Er det preprogrammerte mønster (nøyaktig), eller mindre nøyaktig? Har man eit utgangspunkt, eller meir nøyaktig oppskrift? 
+
+Kanskje eg skal begynne med å ha alle--til--alle koblinger, og sjå korleis det går. Kanskje det er slik det funker biologisk også? ---Vi har veldig mange neuron/ synapser som spedbarn(!?!)
+
+
+
