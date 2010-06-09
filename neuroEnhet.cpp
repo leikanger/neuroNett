@@ -177,7 +177,7 @@ std::ostream & operator<< (std::ostream & ut, synapse* pSynArg){
 inline void synSkilleElement::aktiviserOgRegnUt()
 { //{  ... }
 	// legger meg til bakerst i arbeidskø. (for å holde på "iterasjoner" videre i arbeidskøa)
-	synapse::pNesteSynapseUtregningsKoe.push_back( this );
+	/*synSkilleElement::*/pNesteSynapseUtregningsKoe.push_back( this );
 	
 	// - - - - - - - - synSkilleElement flytta til slutten, igjen, alle nye jobber kommer på neste tidsteg, igjen.. - - - - - - - - - - - - - - - -
 

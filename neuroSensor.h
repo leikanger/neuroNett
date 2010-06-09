@@ -1,10 +1,8 @@
 
 /*
 	PLAN:
-	Lage egen sensor-tråd for generering av sensorinput. Denne skal iterere en int og sende ut aksjonspotensial for sensorane i en definert frekvens.
-	Frekvens definert av konstant eller funksjon. Frekvens konkretisert ved å sende ut aksjonspotensial kvar n-te iterasjon (vha. int). Dette gjøres 
-	på normal måte, som neuron gjør det, ved å synapse->overfoerSignaletTilPostsynNeuron() .
-
+	Bytt ut denne simple måten (fyr kvar n-te tidssteg) med den nye mekanismen for egen-eksitasjon ("lekker inn verdi"). 
+		Denne lekkasjen kan variere med målt variabel (som i kroppen..) Ved høg målt variabel, vil det være høgare egenfrekvens..
 */
 
 
@@ -12,6 +10,29 @@
   #define NEUROSENSOR_H
 
   #include "neuron.h"
+
+
+/****************************************************************************************************************************************************************************************
+ ***************************
+ ***************************      TODO TODO TODO TDOD TODO OTODO TODOT TODOTO ODTO  OTOD TODO TODOT ODOD TODO TODO TODO TODO TODO
+ ***************************          Implementer denne med tanke på nye effekta for neuron: egen-eksitasjon!
+ ***************************
+ *************************** 		(Egeneksitasjonen skal variere med målt variabel. Dette eg også meir biologisk!)
+ ***************************
+ ***************************
+ ***************************
+ *************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
 
 /*************************************************************
 ****    neuroSensor - klasse for generering av signal for ****

@@ -284,7 +284,7 @@ class neuron {
 			// denne fyrer: sjekk alle som den synapser til ( legg til i arbeidskø ):
 			for( std::vector<synapse*>::iterator iter = pUtSynapser.begin(); iter != pUtSynapser.end(); iter++ )
 			{ 	// legger alle synapsene mine inn i arbeidskø
-				synapse::pNesteSynapseUtregningsKoe.push_back( *iter );
+				synSkilleElement::pNesteSynapseUtregningsKoe.push_back( *iter );
 			}	//Legg til alle synapser i neste fifo-kø foR utregning. //OK // går over til bare ei kø, med "tids-synapse"
 	
 			// TODO Legg også inn litt LTP i kva synapse. TODO

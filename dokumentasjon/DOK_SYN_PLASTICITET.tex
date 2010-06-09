@@ -1,3 +1,65 @@
 
 \chapter{Synaptisk vektendring}
-Skriv litt meir om [synaptisk vekt] som funk. av [mengde DA]. Om mekanismane for [mengde DA](syn.overføring (tonic firing, phasic firing, pause), endocrine transmission (poiner to extracellular fluid), lekkasje av DA), og om likevekt mellom LTD (konst?/funk. av syn.vekt(meir->meirLTD)?) og LTP (funk av DA?, annet?).
+
+I neuronet er det mange synapser. Desse vil endres infinitesimalt selv for ``store'' synaptiske endringer. Dette gir at også enkeltsynapser kan sees på statistisk, når man snakker om synaptisk plastisitet.
+
+Totalt, gir dette god grunn for å sjå på systemet fra en statistisk synsvinkel. Når det gjelder dopamin(DA), veit eg at aktivering av D1--receptoren facilitates LTP. På ein eller annan måte er m.a.o. dopamin knytta til størrelsen av synaptisk endring (f.eks. LTP). Sansynligvis er det feil, men eg velger å sjå på det som eit kar med DA, der mengden DA gir størrelsen til synaptisk vektendring (sansynligvis er det andre mekanismer som blir aktivert gjennom D1, men effekta er den samme).
+Dette karret med DA lekker, omtrent som depol.--verdien. Samtidig får det meir gjennom DA--syn.--input (og kanskje endokrin diffudering).
+
+\section{Synaptisk plastisitet--balansen}
+Balansen mellom LTP(synaptisk vektauke) og LTD(synaptisk vektminke)   --- `synaptic plasticity' --- er gitt med ulike mekanismer:
+\begin{description}
+	\item[vektAuke] Graden av LTP er styrt av mange mekanismer, deriblant ein styrt av D1--receptoren. Kaller heile denne mekanismen for DA--mekanismen.\\
+	Modellerer det med ein variabel (som eg kaller dMengdeDA\_i\_neuron), som eg vil multiplisere inn ved LTP (og dermed la LTP være proposjonal med denne variabelen.
+	\item[vektMinke] Graden av LTD er sansynligvis proposjonal med synaptisk vekt(sjå s. \pageref{figur_STDP}). Kan sjå på dette som at synapsen mister postsynaptiske glutamat--receptorer, og dette er mest sansynlig at skjer ved at synapsen mister en satt mengde prosent av receptorene. M.a.o. proposjonal med syn. vekt.. 
+\end{description}
+Dette skaper ei likevekt mellom vektauke og vektminke -- synaptic--plasticity--equilibrium!
+
+Denne likevekta kan forskyves bl.a. ved DA. Dette forplanter seg i pavlovian reward--mekanismer. Ved reward, vil meir DA bli levert, og synapsene vil statistisk sett auke synaptisk vekt. Ved skuffelse, vil pause i tonisk DA--leveranse oppstå, og netto ender vi med synaptisk minke i mottaker--neurona fra f.eks. VTA--neurona som leverer DA.
+
+\subsection{Diskurs om balansen. Fram og tilbake..}
+\label{diskursOmLTPLTD}
+---Sjå figur \ref{figur_STDP}. \emph{Dette er kun en indikasjon, for videre undersøking!} Kansje denne figuren støtter hypotesen min. Tenk meir på denne( merk: \emph{``relative change''}, og den kvantitative følelsen i figuren ).
+\begin{quote}
+In addition, the amount of potentiation decreases for stronger synapses, whereas the relative amount of depression is independent of synaptic size.
+\end{quote}
+Eg trur ikkje det er heilt klart for denne forfatteren. Han blander absolutt mål(først), med relativt mål på slutten.
+
+Det er ivertfall noke her. Fig-teksten i \ref{figur_STDP} seier at det er relative LTP som minker ved mykje synaptisk vekt. LTD har konstant relativ syn.vektstap. Tenk meir på dette!
+\begin{itemize}
+	%\item Kanskje LTP varierer som tidligere antall, minus en syn.vekt--varierende faktor?
+	\item Ei tolkning er at LTP ikkje er avhengig av syn.vekt. \emph{`relative change'}. Minker selvsagt, dersom endringa er konstant, selv om syn.vekt er stor. Dette gir i så fall `relative change' som er liten.\\
+--- I denne tolkninga er det at `relative change' ved LTD ikkje blir mindre når syn.vekt blir stor, som er bemerkelsesverdig!
+\end{itemize}
+%figur om STDP. Viktig i forhold til LTP/LTD balansen.
+\begin{figure}[!htbp]
+	\label{figur_STDP}
+	\centering
+	\includegraphics[width=0.8\textwidth]{figurSTDP.jpeg}
+	\caption{Spike timing-dependent plasticity. a, Synapses are potentiated if the synaptic event precedes the postsynaptic spike. Synapses are depressed if the synaptic event follows the postsynaptic spike. b, The time window for synaptic modification. The relative amount of synaptic change is plotted versus the time difference between synaptic event and the postsynaptic spike. The amount of change falls off exponentially as the time difference increases. In addition, the amount of potentiation decreases for stronger synapses, whereas the relative amount of depression is independent of synaptic size.}
+\end{figure}
+
+
+\section{Tap av ``DA''}
+Det er ikkje for stor tvil om at ``DA'' er viktig element for størrelsen av syn.endring. Vi får det ved syn.overføring og kanskje ved diffundering (sjå \ref{DA_mekanismer}), men korleis tapes det? Korleis mister vi ``DA'' fra neuronet?
+\begin{itemize}
+	\item Ved ``lekkasje'' ?
+	\item Blir ``brukt opp'' ved LTP (og dermed kontinuerlig; siden vi har kontinuerlig LTD, må vi også ha kontinuerlig LTP for å opprettholde syn. vekt. Dette gir for såvidt eit resultat som forrige punkt).
+\end{itemize}
+Andre alternativ resulterer for så vidt i også i effekt som den første(lekkasje), så kan implementere begge to, for å minke prosessorkraft (bedre å bare miste DA, enn å bruke det til LTP -- så ta vekk dette vekt--tillegget samme runde..
+
+
+...\\
+Meir\\
+...
+
+
+\section{Operant--betinging}
+Klassisk betinging(pavlov) er ganske grei å sjå for seg mekanismane bak(på veldig lavt nivå, minnelause system, f.eks. snegler), men kva med operantbetinging? Dette er betinging, der systemet ser fram til (bevisst eller ubevisst) eit framtidig mål\footnote{Kan også være det framtidige målet å gjøre noken andre glad; viktig funksjon for flokkdyr..}.
+Når dette målet er nådd, vil belønning (i form av DA til de aktuelle kretsane) gjennomføres.
+
+Operant--betinging er som sagt mykje meir kompleks form for betinging, som kun høgare utvikla (patte?--) dyr har. Krever en viss form for executive functions (planlegging, sekvesiering, målretta handlinger, ...). Videre trengs eit lenger tids--minne, for å belønne huske mål/handlingane når de er gjennomført. 
+
+\textbf{\emph{Tenk på dette}}, når meir utarbeida modeller for minne/ belønning er på vei!
+
+

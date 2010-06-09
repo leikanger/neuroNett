@@ -1,14 +1,38 @@
 
 
 \chapter{Tid}
+
+For å ordne tid, slik at det er uavhengig av global tid, eller klokketikk i prosessor, eller andre urelevante faktore, har eg implementert en sceduler for
+Auron. Denne går ut på at ei arbeidsliste holder orden på kva jobber som står for tur. Kvar gang en jobb blir utført, og denne leder til nye jobber;
+vil denne jobben slettes fra sin plass først i lista, og 
+de nye jobbane bli lagt til på slutten av lista. I tillegg har eg eit objekt som har samme type som "jobbane" i lista, synSkilleElement, som itererer tid, og holder styr på periodiske fenomen.
+	\\Jobbane er av type synapse, og synSkilleElement er av typen synSkilleElement:public synapse ; (arv) 
+
+Videre er funskjonen void regnUt() overloada, slik at ulike handlinger utføres når *arbeidslista->regnUt() kalles.
+Desse funskjonane er:
+\begin{itemize} 	%eller [itemize] i berland-dokument.. Sjekk og [descripiton]
+\item	Øker tid med en. (Tid er en integer => discrete tids--hopp).
+\item	Legger peiker til seg selv (objektet) til bakerst på arbeidslista, og ta bort fra første plass.
+\item Sjekker om noken av neuroSensor-ane skal fyre (basert på frekvensen de skal fyre med, som igjen skal være basert på tilstand til måleverdi)
+\end{itemize}
+
+Eg hadde i utgangspunktet tenkt å implementere ei arbeidshistorie-liste også, som skulle brukes til å beregne frekvens og lignande, men gjekk vekk fra dette
+siden eg ikkje fikk til en tilfredsstillande "momentan-frekvens". Dette er forsåvidt (nesten) en selvmotsigelse. Vanskelig.
+Istadenfor går løsninga mi ut på å vente i 1/frekvens tid mellom kvart signal. Dette er nermaste eg kommer momentanfrekvens.
+
+
 Når det gjelder tid, så har eg også tatt med dette i universet mitt (simuleringsuniverset). Neurona/synapsene er tidsvariante (bruke tid for å lades opp). Denne tida er ikkje avhengig av processor-tics, eller UTC, men av andre ting i simuVerset eg har laga. Løysinga mi var å lage en scheduler, som også lager discrete tidsiterering.
+
+Eg tenkte akkurat no en tanke om å gjøre det meir kontinuerlig. Dette kan eg gjøre ved at kvar jobb blir lagt til i en map<double dTid, synapse* sJobb>, der dTid blir regna ut når jobben blir regna ut. Dette kan gi ei aukande liste for dTid, og kan la dTid være med når eg kalkulerer tidsvariante effekter. Ide! Men foreløpig skal eg tenke på andre ting / utvikle andre aspekter.
+
+
 \section{Scheduleren}
 I utgangspunktet var planen å lage eit system for sekvensen / kausaliteten i Auron-nettet mitt. Møtte raskt på problematikk med å la alle neurona som skulle fyre før neuron A, fyrte, før A.
 
-Foreløpig løysing er basert på ideen om to køer, der kjøringa av de to køene altererer, når ei kø er ferdigkjørt. Køene inneholder jobber, i form av synapse*. Alle arvtakera etter class synapse har (overlagra?) funksjonen aktiviserOgRegnUt(). 
+Foreløpig løysing er basert på ideen om to køer, der kjøringa av de to køene altererer, når ei kø er ferdigkjørt. Køene inneholder jobber, i form av synapse*. Alle arvtakera etter class synapse har (muligens overlagra) funksjonen aktiviserOgRegnUt(). 
 \begin{itemize}
 	\item I vanlige synapser, vil dette føre til:
-		\\ - oppdatering av presyn. og postsyn. neuron ( oppdatering av [depolarisasjon, DA, anna] på grunnlag av tid siden sist oppdatering), 
+		\\ - oppdatering av postsyn. neuron ( oppdatering av [depolarisasjon, DA, anna] på grunnlag av tid siden sist oppdatering), 
 		\\ - synaptisk overføring -> EPSP / IPSP
 		\\ - LTP/LTD (synaptic plasticity)
 	\item I synSkilleElement er aktiviserOgRegnUt() overlagra, og kjører isteden en funk som: 

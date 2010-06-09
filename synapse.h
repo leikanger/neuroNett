@@ -16,6 +16,17 @@ using std::endl;
 
 /*
 
+	// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+	//
+	// 	RYDD OPP I DETTE! Det er alt for mykje sosing med S.V. i synapse. Greit nok med testing for S-V-fabrikk, men funker dårlig for computational.Rydd
+	//
+	// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+
+
+
+
+
+
 #define DEF_FORHOLD_FRI_VS_MEM_SV 0.2
 
 
@@ -197,8 +208,10 @@ class synapse {
 			 *
 			 * 	Dynamisk LTP (og dermed synaptisk vekt / minke) er styrt herifra, siden vi har LTD også, kvar overføring (pluss tidsfratrekk av vekt)
 			 * 		- LTD er foreløpig statisk, men det er mulig dette er styrt i biologiske system. Mulig FORENKLING: Statisk LTD!
+			 * 			-> også mulig det varierer med depol.verdien. Ved høg depol., vil lik del av det forsvinne, m.a.o. større netto verdi-tap
 			 * 	
-			 * 	Denne skal styrest ved at vi ganger postsyn. depolarisering med en faktor gitt av mengde dopamin i neuronet. 
+			 * 	Denne skal styrest ved at vi ganger postsyn. depolarisering med en faktor gitt av mengde dopamin i neuronet, til LTP-argument.
+			 *
 			 * 	DA-mengde kan tenkes på som eit kar med dopamin, som blir fyllt fra eit DA-neuron med tonisk egenfyring. Denne fyller på DA-mengden
 			 * 	  i neuronet. Ved pause i DA-leveransen, vil reservoiret tømmes, og for ei stund vil LTP minke, og vi får netto vektminke i in/output
 			 * 	(DA påvirker vekt i inn-syn. OG ut-syn.? Dette vil endre når det fyrer, men også kven det fyrer til.. Tenk meir på dette)
@@ -507,7 +520,6 @@ class synapse {
 		neuron* pPreNode;
 		neuron* pPostNode;
 
-		static list<synapse*>  pNesteSynapseUtregningsKoe;
 		static list<synapse*>  pNesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
 		
 		
@@ -593,6 +605,11 @@ class synSkilleElement : public synapse {
 	
 	public:
 		synSkilleElement() : synapse('t') { cout<<"\tinne i konstruktor\n"; }
+
+
+		// arbeidsliste - kø
+		static list<synapse*>  pNesteSynapseUtregningsKoe;
+
 
 		// gjør heilt andre ting enn synapse. Heiter det samme pga overloading.
 		void aktiviserOgRegnUt(); // Utleda i neuroEnhet.cpp

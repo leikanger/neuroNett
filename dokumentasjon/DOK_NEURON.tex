@@ -14,13 +14,14 @@ Denne verdien kan bli påvirka på fleire måter:
 \end{description}
 Denne kombinasjonen gjør kvart enkelt neuron til eit ganske komplisert system, for ikkje å snakke om fleire i ``team''. Har og forenkla vekk veldig mykje, og har bare berørt toppen av laskatongen av den biologiske varianten. Skal etterkvart auke, med DA(dopamin) som argument til variabel LTP/LTD --likevekt. (Kommer etterkvart).
 
-\subsection{Synaptisk input gir en form for depol-endring}
+\subsection{Synaptisk input}
+Synaptisk input gir en form for depol-endring.
 Når neuronet får EPSP og IPSP, endrer dette pr.def. depolarisasjonen i postsynaptisk neuron. Dette har eg tatt med i Auron.
 \begin{description}\item[virtual void sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal(int nArg)] 
 	Sender inn nArg som E/I input, og neuronets depolarisasjon vil endre seg derretter. Postsynapsens depol. verdi returneres. Ved fyring returneres (-1).
 	Timestamp lagres for overføring, og brukes seinere ved ``leaky integrator'' beregning (kor mykje man mister).
 	
-	Eg har også planlagt å utvide returverdi--opplegget, slik at det går an å signallisere ønske om LTD fra postsyn., men dette er lite gjennomtenkt.
+	Eg har også planlagt å utvide returverdi--opplegget, slik at det går an å signallisere ønske om LTD fra postsyn., men dette er lite gjennomtenkt (dette kan jo signalliseres allerede ved en int:0-100, f.eks. Ved 0: lite depol..)
 \end{description}
 
 \subsection{Egen--Eksitasjon (gir resultat ``egenfyring'')}
@@ -28,20 +29,27 @@ Så vidt eg har forstått det, er egeneksitasjon eit vitig element i neuron. Fø
 Eg har implementert egenfyring i Auron, vha. to--tre mekanismer:
 \begin{description}
 	\item[void oppdaterNeuron()] --oppdaterer bl.a. neuronets verdi, bl.a. som resultat av egeneksitasjon. Ser og på neuron--lekkasje.
-	\item[map<neuron,unsigned> sNesteFyringForNeuron] --holder oversikt over estimert tid for fyring av neuron som resultat av egeneksitasjon. Dette estimatet er alltid for kort, da det ikkje tar hensyn til lekkasjen i neuronet (\%-vis tap av verdi, kvar runde). Dette er bra, siden vi da sjekker verdien for tidlig heller en for seint.\\
+	\item[map<neuron,unsigned> sNesteFyringForNeuron;] --holder oversikt over estimert tid for fyring av neuron som resultat av egeneksitasjon. Dette estimatet er alltid for kort, da det ikkje tar hensyn til lekkasjen i neuronet (\%-vis tap av verdi, kvar runde). Dette er bra, siden vi da sjekker verdien for tidlig heller en for seint.\\
 Denne lista brukes for å optimalisere systemet, slik at det ikkje blir naudsynt å kjøre oppdaterNeuron() heile tida (spare tid/ressurser).
-	\item[tidsSkilleElement->aktiviserOgRegnUt()] ---aktiviserOgRegnUt er overlagra i tidsSkilleElement, slik at isteden for å regne ut postsynaptisk verdi, vil den iterere tid, holde styr på periodiske fenomener og andre ting som varierer med tida; deriblandt depol.--lekkasje og egen--eksitasjon. Ved egen--eksitasjon over terskelen, vil neuronet fyre i tidsSkilleElement, men først etter at tidsSkilleElement har kopiert over peikeren til seg sjølv, over til slutten av arbeidskøa (pNesteSynapseUtregningsKoe). Dette vil føre til at resultatet av fyringa (at synapsene som blir lagt til i arbeidskøa, vil først bli lagt til \emph{etter} neste tidsiterasjon).
+	\item[tidsSkilleElement->aktiviserOgRegnUt()] ---aktiviserOgRegnUt() er overlagra i tidsSkilleElement, slik at isteden for å regne ut postsynaptisk verdi, vil den iterere tid, holde styr på periodiske fenomener og andre ting som varierer med tida; deriblandt depol.--lekkasje og egen--eksitasjon. Ved egen--eksitasjon over terskelen, vil neuronet fyre i tidsSkilleElement, men først etter at tidsSkilleElement har kopiert over peikeren til seg sjølv, over til slutten av arbeidskøa (pNesteSynapseUtregningsKoe). Dette vil føre til at resultatet av fyringa (at synapsene som blir lagt til i arbeidskøa, vil først bli lagt til \emph{etter} neste tidsiterasjon, siden tidsSkilleElement allerede er flytta til slutten av arbeidslista).
 \end{description}
 
 \subsection{Lekkasje av verdi, depol--lekkasje}
-Egeneksitasjon auker depol.--verdien, lekkasje minker verdien. Korleis henger dette sammen?\\
-Egeneksitasjonen er konstant, mens lekkasjen er i prosenter av totalverdien. Implementert ved 
-nVerdiForDepolarisering *= DEGRADERINGSFAKTOR\_FOR\_TIDSINTEGRASJON\_I\_NEURON.
+Egeneksitasjon auker depol.--verdien, lekkasje minker verdien. Kvifor ha med begge to effektene?
+\begin{itemize}
+	\item Egeneksitasjonen er konstant, eller avhenger av annen ukjendt faktor. Mulige eksempel (eg veit ikkje) er:
+	\begin{itemize}
+		\item strekk i strekksensor--neuron.
+		\item spenning over cellemembran i kjemiske sensor--neuron.
+		\item kanskje glutamat (stresshormon) i almenne neuron?
+	\end{itemize}
+	\item Lekkasjen er i prosenter av totalverdien. Implementert ved \\nVerdiForDepolarisering *= \mbox{DEGRADERINGSFAKTOR\_FOR\_TIDSINTEGRASJON\_I\_NEURON}.
+\end{itemize}
 
 Lekasjen er med andre ord ulineær, og sterkare des større nVerdiForDepolarisering er (som ei lekk bøtte).
 
-\section{LTP/LTD}
-LTP/LTD er \emph{synaptisk} plastisitet, men er også verdt å tenke på i forhold til neuron. Her i neuron kan det være at overordna mekanismer som bestemmer størrelsen på LTP / balansen mellom [LTP/LTD](konst. LTD, variabel LTP=>variabel syn.vekt).
+\section{Synaptisk plastisitet}
+LTP/LTD er \emph{synaptisk} plastisitet, men er også verdt å tenke på i forhold til neuron. Her i neuron kan det være at overordna mekanismer som bestemmer størrelsen på LTP / balansen mellom [LTP/LTD](konst. LTD, variabel LTP=>variabel syn.vekt? sjå side \pageref{diskursOmLTPLTD}, for meir).
 
 Eg har lest at adtivering av dopaminreceptoren D1 legger til rette for LTP (i nokre neuron). Dette opner for å legge inn DA i Auron. 
 Eg har tenkt å lage DA--kretser, som forsyner neuron med DA. No som eg har implementert egenfyring, gir dette rom for tonisk DA--fyring.
@@ -53,7 +61,7 @@ Eg har tenkt å lage DA--kretser, som forsyner neuron med DA. No som eg har impl
 
 Dette har ført meg til ideen om DA--nivå i auron har direkte innverkning på grad av LTP i synapsene til neuronet. Foreløpig trur eg at det som blir påverka, er innsynapsene til neuronet.
 
-\subsection{DA--nivå har samme effektene som for depol--verdi (sjå \ref{depolVerdi}):}
+\subsection{DA--nivå har samme effektene som for depol--verdi (sjå \ref{depolVerdi}):} \label{DA_mekanismer}
 \begin{description}
 	\item[Synaptisk input] Neuron får input fra DA--neuron (t.d. VTA, substantia nigra). Dette må eg ha i auron også.
 	\item[Egen--eksitasjon] Neuron kan ikkje lage DA sjølv, men det som kan skje er at DA diffunderer inn i neuronet fra utsida av neuronet (endokrin overføring). Dette vurderer eg å implementere. I så fall ved å ha en peiker i kvart neuron, til extracellularFluid, og en form for overføring her. Venter med det.

@@ -16,11 +16,11 @@ class neuron {
 		int nVerdiForDepolarisering;
 		int nVerdiForDepolariseringEndringsrate;
 
-		unsigned long ulTimestampForrigeVerdiendring_neuronDepol;
+		unsigned long ulTimestampForrigeVerdiendring\\_neuronDepol;
 		unsigned long ulTimestampFyring;
 		unsigned long ulTimestampForrigeOppdatering; // Oppdatering av: DA(for LTP-storleik), depol., osv.
 
-		double dMengde_DA_i_neuron; 	//(for LTP (postsyn.). Størrelsen er avhengig av mengden DA i neuronet..)
+		double dMengde\\_DA\\_i\\_neuron; 	//(for LTP (postsyn.). Størrelsen er avhengig av mengden DA i neuronet..)
 					/*  		Skal variere rundt 100.0 (double)
 					 *   			Skal endres ved LTP, og i this.oppdaterNeuron();
 					 */
@@ -35,12 +35,12 @@ class neuron {
 
 		virtual void kalkulerDegraderingAvVerdiPaaGrunnlagAvTimestampSidenSist( )
 		{
-		 	unsigned long ulKlokketikkSidenSisteInput =   ulTidsiterasjoner - ulTimestampForrigeVerdiendring_neuronDepol;
+		 	unsigned long ulKlokketikkSidenSisteInput =   ulTidsiterasjoner - ulTimestampForrigeVerdiendring\\_neuronDepol;
 		
 			double tempFaktor = 1;
-			// optimalisering_ : gjør fra neste linje til : pow( DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON, ulKlokketikkSidenSisteInput, 
-			for(unsigned int i=0; i < ulKlokketikkSidenSisteInput; i++ ){ 	tempFaktor *= DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON;   }
- 			// TODO endre til tempFaktor *= DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON ...	optimalisering..
+			// optimalisering\\_ : gjør fra neste linje til : pow( DEGRADERINGSFAKTOR\\_FOR\\_TIDSINTEGRASJON\\_I\\_NEURON, ulKlokketikkSidenSisteInput, 
+			for(unsigned int i=0; i < ulKlokketikkSidenSisteInput; i++ ){ 	tempFaktor *= DEGRADERINGSFAKTOR\\_FOR\\_TIDSINTEGRASJON\\_I\\_NEURON;   }
+ 			// TODO endre til tempFaktor *= DEGRADERINGSFAKTOR\\_FOR\\_TIDSINTEGRASJON\\_I\\_NEURON ...	optimalisering..
 			// merk *= som betyr at det er lik seg sjølv ganger tempFaktor
 			nVerdiForDepolarisering *= tempFaktor;  
 		
@@ -49,16 +49,16 @@ class neuron {
 		}
 
 
-		void tidsBasertDepolariseringAvNeuron_til_egenfyring(int antallKlokkeTikkSiden)
+		void tidsBasertDepolariseringAvNeuron\\_til\\_egenfyring(int antallKlokkeTikkSiden)
 		{
 			// Tabell for faktor for degradering, på grunnlag av tid.
-				// #define DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON 0.96
-				// #define DEF_MAKS_TID_MELLOM_OPPDATERINGER_FOR_KVART_NEURON 100 
+				// #define DEGRADERINGSFAKTOR\\_FOR\\_TIDSINTEGRASJON\\_I\\_NEURON 0.96
+				// #define DEF\\_MAKS\\_TID\\_MELLOM\\_OPPDATERINGER\\_FOR\\_KVART\\_NEURON 100 
 			
-			// oppdater ulTimestampForrigeVerdiendring_neuronDepol
-			ulTimestampForrigeVerdiendring_neuronDepol = ulTidsiterasjoner;
+			// oppdater ulTimestampForrigeVerdiendring\\_neuronDepol
+			ulTimestampForrigeVerdiendring\\_neuronDepol = ulTidsiterasjoner;
 
-			if( nVerdiForDepolarisering > TERSKEL_DEFAULT ){
+			if( nVerdiForDepolarisering > TERSKEL\\_DEFAULT ){
 				cout<<"\n\tEGENFYRER! * * * * * * * * \n";
 				fyr();
 			}
@@ -80,7 +80,7 @@ class neuron {
 		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 		virtual int sendInnPostsynaptiskEksitatoriskEllerInhibitoriskSignal( int nInnsignalArg )
 		{
-			if( ulTidsiterasjoner -  ulTimestampFyring > REFRACTION_TIME_NEURON ) return -9;
+			if( ulTidsiterasjoner -  ulTimestampFyring > REFRACTION\\_TIME\\_NEURON ) return -9;
 			//int foerTidSig = nVerdiForDepolarisering; 		// for utskrift.
 			kalkulerDegraderingAvVerdiPaaGrunnlagAvTimestampSidenSist();
 			//int etterTidSig = nVerdiForDepolarisering; 	 	// for utskrift.
@@ -95,8 +95,8 @@ class neuron {
 			cout<<" \t+\t"; cout.width(8); cout<<nInnsignalArg; cout<<" \t=>\t";  cout.width(8); 	cout<<nVerdiForDepolarisering <<"\n";
 			//} */ 
 
-			// tilordner tempklokke til timestamp for verdien for nVerdiForDepolarisering (neuron::timestamp_forrige_input)
-			ulTimestampForrigeVerdiendring_neuronDepol = ulTidsiterasjoner;
+			// tilordner tempklokke til timestamp for verdien for nVerdiForDepolarisering (neuron::timestamp\\_forrige\\_input)
+			ulTimestampForrigeVerdiendring\\_neuronDepol = ulTidsiterasjoner;
 			
 			// ser om det går over terskel:
 			int returverdi;
@@ -131,7 +131,7 @@ class neuron {
 			// denne fyrer: sjekk alle som den synapser til ( legg til i arbeidskø ):
 			for( std::vector<synapse*>::iterator iter = pUtSynapser.begin(); iter != pUtSynapser.end(); iter++ )
 			{ 	// legger alle synapsene mine inn i arbeidskø
-				synapse::pNesteSynapseUtregningsKoe.push_back( *iter );
+				synapse::pNesteSynapseUtregningsKoe.push\\_back( *iter );
 			}	//Legg til alle synapser i neste fifo-kø foR utregning. //OK // går over til bare ei kø, med "tids-synapse"
 	
 			// TODO Legg også inn litt LTP i kva synapse. TODO
@@ -168,7 +168,7 @@ class neuron {
 		virtual int sjekkKorDepolarisertNeuronEr( ){ 
 		 	// returnerer depolarisertings-verdi. Dersom den er over terskel, returneres -1.
 
-			if( nVerdiForDepolarisering > TERSKEL_DEFAULT  	/*nTerskel*/){
+			if( nVerdiForDepolarisering > TERSKEL\_DEFAULT  	/*nTerskel*/){
 
 				return -1;
 		 	}else
@@ -185,10 +185,10 @@ class neuron {
 
 
 	public:
-		//neuron() 		: nVerdiForDepolarisering(0), ulTimestampForrigeVerdiendring_neuronDepol(0), navn("uten navn"),   	terskel(TERSKEL_DEFAULT) { } 
+		//neuron() 		: nVerdiForDepolarisering(0), ulTimestampForrigeVerdiendring\_neuronDepol(0), navn("uten navn"),   	terskel(TERSKEL\_DEFAULT) { } 
 		neuron( std::string n ) : 	nVerdiForDepolarisering(0), 
 							nVerdiForDepolariseringEndringsrate(100/*XXX alt for mykje. Tester.. XXX*/),
-	     						ulTimestampForrigeVerdiendring_neuronDepol (ulTidsiterasjoner), 
+	     						ulTimestampForrigeVerdiendring\_neuronDepol (ulTidsiterasjoner), 
 		 					ulTimestampFyring 	(ulTidsiterasjoner),
 							ulTimestampForrigeOppdatering(ulTidsiterasjoner),
 							navn(n)
@@ -216,7 +216,7 @@ class neuron {
 			 	pTempSyn = pInnSynapser.back(); 
 				cout<<"~neuron: fjærner innsyn. fra " <<(*pInnSynapser.back()).pPreNode->navn <<"\ttil " <<navn <<"(meg): \n";
 				// Tar vekk siste element i vector.
-				pInnSynapser.pop_back(); //-Nei: taes hand om i ~synapse
+				pInnSynapser.pop\_back(); //-Nei: taes hand om i ~synapse
 				
 				// ordner det fra hi sida og:
 				pTempSyn->pPreNode->taBortOutputSynapse( pTempSyn ); //XXX
@@ -230,7 +230,7 @@ class neuron {
 	 			pTempSyn = pUtSynapser.back();
 				cout<<"~neuron: fjærner utsyn. fra " <<navn <<"(meg) til " <<(*pUtSynapser.back()).pPostNode->navn <<endl;
 				// Tar vekk siste element i vector.
-				pUtSynapser.pop_back(); //-Nei: taes hand om i ~synapse
+				pUtSynapser.pop\_back(); //-Nei: taes hand om i ~synapse
 			
 				pTempSyn->pPostNode->taBortInputSynapse( pTempSyn );
 				// Sletter synapse som pTempSyn peiker på.
@@ -245,12 +245,12 @@ class neuron {
 
 
 		// U-testa: (grundig, men den funker)
-		void taBortInputSynapse(synapse* syn_p_ArgTaVekk)
+		void taBortInputSynapse(synapse* syn\_p\_ArgTaVekk)
 		{ 
 	 		//fjærner arg fra inputliste: 	//{
 			for( std::vector<synapse*>::iterator iter = pInnSynapser.begin(); iter != pInnSynapser.end() ; iter++ ){
-				if( *iter == syn_p_ArgTaVekk ){
-					cout<<"\ttaBortInputSynapse(syn*): Fjærner input-syn. fra [" <<syn_p_ArgTaVekk->pPreNode->navn <<"] -> " 
+				if( *iter == syn\_p\_ArgTaVekk ){
+					cout<<"\ttaBortInputSynapse(syn*): Fjærner input-syn. fra [" <<syn\_p\_ArgTaVekk->pPreNode->navn <<"] -> " 
 										     <<"meg(" <<navn <<")\n";
 					(pInnSynapser).erase( iter );
 					break;
@@ -258,12 +258,12 @@ class neuron {
 			} //}
 		} 
 
-		void taBortOutputSynapse(synapse* syn_p_ArgTaVekk)
+		void taBortOutputSynapse(synapse* syn\_p\_ArgTaVekk)
 		{ // {
 	 		//fjærner arg fra inputliste: //{
 			for( std::vector<synapse*>::iterator iter = pUtSynapser.begin(); iter != pUtSynapser.end() ; iter++ ){
-				if( *iter == syn_p_ArgTaVekk ){
-					cout<<"\ttaBortOutputSynapse(syn*): Fjærner output-syn. fra meg(" <<navn <<") -> [" <<syn_p_ArgTaVekk->pPostNode->navn <<"]\n";
+				if( *iter == syn\_p\_ArgTaVekk ){
+					cout<<"\ttaBortOutputSynapse(syn*): Fjærner output-syn. fra meg(" <<navn <<") -> [" <<syn\_p\_ArgTaVekk->pPostNode->navn <<"]\n";
 					(pUtSynapser).erase( iter );
 					break;
 				}
@@ -275,7 +275,7 @@ class neuron {
 		void oppdaterNeuron()
 		{ //  {
 			//{ Oppdaterer DA, depol., og andre tidsvariante fenomen i neuron.
-//#define SVINN_FAKTOR_KVAR_RUNDE 0.98
+//#define SVINN\_FAKTOR\_KVAR\_RUNDE 0.98
 			
 			/* - Sjekk tid siden sist, kjør for-loop over alle iter. siden sist, oppdater for kvar iterasjon. 
 			 	regn ut når neste fyring vil være, uten meir eksitatorisk/inhibitorisk input. Skriv dette i tabell sNesteFyringForNeuron.
@@ -303,26 +303,26 @@ class neuron {
 					nVerdiForDepolarisering += nVerdiForDepolariseringEndringsrate;
 
 					// Trekker fra negativ effekt: lekking av verdi i "leaky integrator". ( Tenk på eit lekk vannrør. )
-					nVerdiForDepolarisering *= DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON;
+					nVerdiForDepolarisering *= DEGRADERINGSFAKTOR\_FOR\_TIDSINTEGRASJON\_I\_NEURON;
 
-					//if(nVerdiForDepolarisering > TERSKEL_DEFAULT){ fyr(); break; }
+					//if(nVerdiForDepolarisering > TERSKEL\_DEFAULT){ fyr(); break; }
 					
 					// XXX Her er bedre å lage en funk: "kor-mykje-får-eg-om-eg-hadde-oppdater-kvar-runde-i-så-manke-tiks(int)" --gir endring i depol
-					tidsBasertDepolariseringAvNeuron_til_egenfyring(ulTidsiterasjoner-ulTimestampForrigeOppdatering);
+					tidsBasertDepolariseringAvNeuron\_til\_egenfyring(ulTidsiterasjoner-ulTimestampForrigeOppdatering);
 
 
 				// 	Ikkje implementert DA enda..
-				//	dMengde_DA_i_neuron *= SVINN_FAKTOR_KVAR_RUNDE; 
+				//	dMengde\_DA\_i\_neuron *= SVINN\_FAKTOR\_KVAR\_RUNDE; 
 				}
-				// Her er bedre å (optimalisering:) pow(dMengde_DA_i_neuron, antall iterasjoner);
+				// Her er bedre å (optimalisering:) pow(dMengde\_DA\_i\_neuron, antall iterasjoner);
 			}
 
 			// konstant derivert av depol.
-			unsigned uTidsDiffTilNesteFyring =  ( (TERSKEL_DEFAULT - nVerdiForDepolarisering) / nVerdiForDepolariseringEndringsrate );
+			unsigned uTidsDiffTilNesteFyring =  ( (TERSKEL\_DEFAULT - nVerdiForDepolarisering) / nVerdiForDepolariseringEndringsrate );
 	
 			// Safety, redundans. Antagelig unaudsynt redundans..
-			if(uTidsDiffTilNesteFyring > DEF_MAKS_TID_MELLOM_OPPDATERINGER_FOR_KVART_NEURON) 	//opt240@neuron.h
-				uTidsDiffTilNesteFyring = DEF_MAKS_TID_MELLOM_OPPDATERINGER_FOR_KVART_NEURON;
+			if(uTidsDiffTilNesteFyring > DEF\_MAKS\_TID\_MELLOM\_OPPDATERINGER\_FOR\_KVART\_NEURON) 	//opt240@neuron.h
+				uTidsDiffTilNesteFyring = DEF\_MAKS\_TID\_MELLOM\_OPPDATERINGER\_FOR\_KVART\_NEURON;
 
 			cout<<"\t\t\toppdatering() for neuron " <<navn <<". Neste oppdatering: "
 					<<(ulTidsiterasjoner + uTidsDiffTilNesteFyring)
@@ -366,18 +366,18 @@ class neuron {
 
 		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 		 *
-		 *  neuron* s_get_npNesteNeuron_med_oppdatering_neste_tid()
+		 *  neuron* s\_get\_npNesteNeuron\_med\_oppdatering\_neste\_tid()
 		 *  	- arg: 	void
 		 *  	- return: 	neuron* (peiker til neste på oppdateringslista).
 		 *  			0 når den er ferdig, eller lista er tom.
 		 *  	- static: 	static map<neuron*, unsigned>::iterator iter;
-		 *  			static bool bI_gang_med_soek_etter_neuron_med_fyring_neste_tid;
+		 *  			static bool bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid;
 		 *
-		 *  	Funksjonen har en bool: bI_gang_med_soek_etter_neuron_med_fyring_neste_tid,
+		 *  	Funksjonen har en bool: bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid,
 		 *  		som holder styr på om den er i gang med å gå gjennom lista fra før.
 		 *  	Dersom den er det, vil det fortsette. 
 		 *  	Dersom ikkje ellers vil den initiere iteratoren til sNesteFyringForNeuron.begin(),
-		 *  		og bI_gang_med_soek.. = true.
+		 *  		og bI\_gang\_med\_soek.. = true.
 		 * 		(slik at den ikkje initieres på nytt ved neste kall)
 		 *
 		 * 	Funksjonen må kalles en gang for kvar neuron* til neste neuron. Difor 
@@ -386,37 +386,37 @@ class neuron {
 		 *
 		 *
 		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-		static neuron* s_get_npNesteNeuron_med_oppdatering_neste_tid()
+		static neuron* s\_get\_npNesteNeuron\_med\_oppdatering\_neste\_tid()
 		{
 			// Signalliserer tilbake at liste er tom, om Tom:
 			if( sNesteFyringForNeuron.empty() ) return 0;
 
 			static std::map<neuron*, unsigned>::iterator iter;
-			static bool bI_gang_med_soek_etter_neuron_med_fyring_neste_tid = false;
+			static bool bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid = false;
 		     
 			// Dersom forrige søk er fullført, dvs ikkje er i gang med søk etter neuron med fyring neste tid, skal iterator resettes:
-			if( ! bI_gang_med_soek_etter_neuron_med_fyring_neste_tid ){
+			if( ! bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid ){
 				iter = sNesteFyringForNeuron.begin();
 				cDebug<<"init iter til: [" <<(*iter).first <<", " <<(*iter).second <<"]\n";
 				// Er no i gang med søk etter neste neuron. Setter bool deretter:
-				bI_gang_med_soek_etter_neuron_med_fyring_neste_tid = true;
+				bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid = true;
 			}
 
 			while( ++iter != sNesteFyringForNeuron.end() ){
 				if( (*iter).second <= (ulTidsiterasjoner +1) ){	
 					// returnerer neuron. Vil fortsette igjen her (siden iter ikkje vil bli resatt pga. 
-					// 						bI_gang_med_soek_etter_neuron_med_fyring_neste_tid = true (kommer ikkje til kallet under)
+					// 						bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid = true (kommer ikkje til kallet under)
 					return (*iter).first;
 				}
 			}
 
 			// Er ferdig med søk om han kommer hit. Setter bool derretter:
-			bI_gang_med_soek_etter_neuron_med_fyring_neste_tid = false;
+			bI\_gang\_med\_soek\_etter\_neuron\_med\_fyring\_neste\_tid = false;
 			// Signalliserer at er ferdig:
 			return 0;
 		}
 
-  		static void sSkrivUt_sNesteFyringForNeuron_map()
+  		static void sSkrivUt\_sNesteFyringForNeuron\_map()
 		{
 			if(sNesteFyringForNeuron.size() == 0){ cout<<"sNesteFyringForNeuron.size() == 0. (Tom liste).\n";}
 			if(sNesteFyringForNeuron.empty()){ cout<<"sNesteFyringForNeuron.empty(). (Tom liste). Returnerer.\n"; return; }
@@ -435,7 +435,7 @@ class neuron {
 			cout<<"for\n";
 			if( ! sNesteFyringForNeuron.empty()){
 				cout<<"ikkje tom liste\n";
-				for( iter_sNeste = sNesteFyringForNeuron.begin(); iter_sNeste != sNesteFyringForNeuron.end(); ++iter_sNeste ){
+				for( iter\_sNeste = sNesteFyringForNeuron.begin(); iter\_sNeste != sNesteFyringForNeuron.end(); ++iter\_sNeste ){
 					cout<<"|- " <<(*iter).first <<" - " <<(*iter).second <<" -|\n";
 				}	 	
 			}*/
@@ -551,12 +551,12 @@ class neuron {
  * * * * * * * * * *                        KODE STARTER :                           * * * * * * * * * *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define DEGRADERINGSFAKTOR_FOR_TIDSINTEGRASJON_I_NEURON 0.96 // for eksempel..         (ganger med denne faktoren per klokketikk) 
+#define DEGRADERINGSFAKTOR\_FOR\_TIDSINTEGRASJON\_I\_NEURON 0.96 // for eksempel..         (ganger med denne faktoren per klokketikk) 
 
-#define TERSKEL_DEFAULT 999 
-#define HALV_TERSKEL_DEFAULT TERSKEL_DEFAULT/2
+#define TERSKEL\_DEFAULT 999 
+#define HALV\_TERSKEL\_DEFAULT TERSKEL\_DEFAULT/2
 
-#define DEF_MAKS_TID_MELLOM_OPPDATERINGER_FOR_KVART_NEURON 20 // Dette er en sikkerhet, som er bra å ha i innfasinga av estimert-fyring-optimaliseringa.
+#define DEF\_MAKS\_TID\_MELLOM\_OPPDATERINGER\_FOR\_KVART\_NEURON 20 // Dette er en sikkerhet, som er bra å ha i innfasinga av estimert-fyring-optimaliseringa.
 										// -- redundans!
 										// Kanskje mulig å optimalisere bort etterkvart.
 										// (sjå opt240@neuron.h)
