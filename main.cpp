@@ -1,3 +1,4 @@
+//KANN
 #include "main.h"
 #include "neuron.h"
 #include "neuroSensor.h"

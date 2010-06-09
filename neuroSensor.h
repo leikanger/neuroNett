@@ -1,4 +1,5 @@
 
+//KANN
 /*
 	PLAN:
 	Bytt ut denne simple måten (fyr kvar n-te tidssteg) med den nye mekanismen for egen-eksitasjon ("lekker inn verdi"). 

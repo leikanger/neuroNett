@@ -1,4 +1,5 @@
 
+//KANN
 //{ Kladd:
 /*
 	Neste store utfordring er korleis gro eit neuralt nettverk, uten å fotfølge algoritmene?
