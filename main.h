@@ -1,5 +1,5 @@
+//KANN/SANN
 //#include <pthread.h>
-//KANN
 
 #include <iostream> // cout, osv
 #include <fstream>  // for file-streams..
@@ -15,6 +15,7 @@
 class synapse;
 class synapse_likevekt;
 class neuron;
+class neuroParametre;
 
 
 // globale variabelDeklarasjoner:
@@ -34,16 +35,9 @@ extern std::ostream & operator<< (std::ostream & ut, neuron neuroArg );
 //extern void switchAktivArbeidsKoe_og_itererTid();
 
 
-
-
-
-
-
-
 #ifndef MAIN_H
   #define MAIN_H
   #include "neuron.h"
-
 
 
 using std::ofstream;

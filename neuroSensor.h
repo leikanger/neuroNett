@@ -1,5 +1,5 @@
+//KANN/SANN
 
-//KANN
 /*
 	PLAN:
 	Bytt ut denne simple måten (fyr kvar n-te tidssteg) med den nye mekanismen for egen-eksitasjon ("lekker inn verdi"). 
@@ -13,27 +13,6 @@
   #include "neuron.h"
 
 
-/****************************************************************************************************************************************************************************************
- ***************************
- ***************************      TODO TODO TODO TDOD TODO OTODO TODOT TODOTO ODTO  OTOD TODO TODOT ODOD TODO TODO TODO TODO TODO
- ***************************          Implementer denne med tanke på nye effekta for neuron: egen-eksitasjon!
- ***************************
- *************************** 		(Egeneksitasjonen skal variere med målt variabel. Dette eg også meir biologisk!)
- ***************************
- ***************************
- ***************************
- *************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-
-
-
-
-
-
-
-
-
-
-
 
 /*************************************************************
 ****    neuroSensor - klasse for generering av signal for ****
@@ -45,7 +24,7 @@
 ****              neurale nett.                           ****
 ****    Skal sjekkes av egen tråd, og sende signal, om    ****
 ****    det er på tide. (gitt av statisk frekvens, input..**** 		neuroSensor( neuron* pN, double vekt, int "frekvens", string navn, int antallSig) : 
-*************************************************************/
+************************************************************a * /
 class neuroSensor : public neuron{
 	private:
 		unsigned int nFrekvens;
@@ -53,12 +32,12 @@ class neuroSensor : public neuron{
 		int nAntallRepitisjonerAvSignal;
 
 	public:	 
-/*		neuroSensor( neuron* pN, double vekt ) : nFrekvens(0)
+/ *		neuroSensor( neuron* pN, double vekt ) : nFrekvens(0)
 			{ 	leggTilSynapse( pN, vekt );    pNeuroSensorListe.push_back( this );	}
 	//neuroSensor( neuron* pN, double vekt ) 		    			{ 	pUtSynapser.push_back( new synapse( pN, vekt )  ); 	}
 		neuroSensor( neuron* pN, double vekt, std::string navn ) : neuron(navn), nFrekvens(0)	
 			{ 	leggTilSynapse( pN, vekt );    pNeuroSensorListe.push_back( this );	}
-*/
+* /
 
 		neuroSensor( neuron* pN, double vekt, int nF, std::string navn, int antallSig =-1) : 
 								neuron(navn), nFrekvens(nF), nAntallRepitisjonerAvSignal(antallSig) { 
@@ -91,4 +70,7 @@ class neuroSensor : public neuron{
 		friend class synSkilleElement;
 };
 
+
+
+*/
 #endif

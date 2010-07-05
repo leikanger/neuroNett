@@ -1,5 +1,14 @@
+//KANN/SANN
 
-//KANN
+
+/*
+	Skal inneholde mekanismane for DA-neuron, som belønner neuron som bidrar til å lage bra output-mønster. Skal også ha tonisk fyring, slik at det skal 
+	  være mulig å "straffe neuron" som bidrar til "feil" output-fyring. (feil mønster).
+
+	Denne er aktuell for både KANN og SANN !
+*/
+
+
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h> 	// for exit()
