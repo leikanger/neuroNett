@@ -1,16 +1,23 @@
 //KANN/SANN
 //#include <pthread.h>
 
-#include <iostream> // cout, osv
-#include <fstream>  // for file-streams..
-//#include <iomanip>  // Er denne i bruk? XXX
-#include <string>   // string
-#include <ostream>  // ?
-#include <vector>   // vector
-#include <stdlib.h>   // rand
-#include <algorithm> // for_each
+#include <iostream> 	// cout, osv
+#include <fstream>  	// for file-streams..
+//#include <iomanip>  	// Er denne i bruk? XXX
+#include <string>   	// string
+#include <ostream>  	// ?
+#include <vector>   	// vector
+#include <stdlib.h>   	// rand
+#include <algorithm> 	// for_each
+#include <list> 	// for list
+#include <map>    	// map
 
 #include <cmath> 	// for pow( , )
+
+
+
+
+#include "kappa_tillegg.h"
 
 class synapse;
 class synapse_likevekt;
@@ -35,16 +42,20 @@ extern std::ostream & operator<< (std::ostream & ut, neuron neuroArg );
 //extern void switchAktivArbeidsKoe_og_itererTid();
 
 
-#ifndef MAIN_H
-  #define MAIN_H
-  #include "neuron.h"
-
-
 using std::ofstream;
 using std::cout;
 using std::endl;
 
 using std::vector;
+
+
+
+
+
+
+#ifndef MAIN_H
+  #define MAIN_H
+  #include "neuron.h"
 
 
 

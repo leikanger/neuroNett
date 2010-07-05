@@ -1,4 +1,4 @@
-//KANN/SANN
+//KANN/SANN 
 #include "main.h"
 #include "neuron.h"
 #include "neuroSensor.h"
@@ -126,7 +126,6 @@ std::ostream & operator<< (std::ostream & ut, synSkilleElement synSkileE_arg ){ 
 	ut<<"synSkilleElement.\n";
 	return ut;
 } //}
-
 
 /* ******************************************************************************************************
 // aktiviserOgRegnUt() :

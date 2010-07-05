@@ -99,12 +99,21 @@ int main(int argc, char *argv[])
 		<<nD <<"\n";
 		//<<sC <<"\n";
 
+	cout<<"\n\n\n\n\nHERHERHER:\n\n";
+	nA.test_neuroParamJeje.kappa = 1000;
+	nA.test_neuroParamJeje.alpha = 0.001;
+	cout<<"nA.test_neuroParamJeje.kappa = X; utskrift av den: " <<nA.test_neuroParamJeje.kappa <<"\n\n\n\n";
 
 
 
 	cout<<"\n\t\tEitt sekunds stillhet for INGEN SEGAULT!\n\n";
 	sleep(1);
 
+	nA.test_neuroParamJeje.kalkulerPeriode();
+	cout 	<<"Meir: nA's neuroParametre: ";
+	cout 	<<nA.test_neuroParamJeje <<endl;
+	
+	cout << "\n\t\tJEJEJEJ\n\n\n";
 
 
 	return 0;

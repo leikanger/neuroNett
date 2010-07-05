@@ -1,18 +1,18 @@
 CFLAGS=-march=core2 -g -O2 -Wall #-pthread
 CPPFLAGS=${CFLAGS}
 
-all: neuroNett.out
+#all:	neuroNett.out
 
-neuroNett.out: main.o neuroEnhet.o
-	g++ ${CFLAGS} main.o neuroEnhet.o -o neuroNett.out
+neuroNett.out: main.o neuroEnhet.o 
+	echo "\n\n"; g++ ${CFLAGS} main.o neuroEnhet.o -o neuroNett.out; echo "\n\n"
 
-main.o: main.cpp main.h
+main.o: main.cpp main.h kappa_tillegg.h
 	g++ ${CFLAGS} -c main.cpp 
 
-neuroEnhet.o: neuroEnhet.cpp neuron.h neuroSensor.h synapse.h
+neuroEnhet.o: neuroEnhet.cpp neuron.h neuroSensor.h synapse.h kappa_tillegg.h
 	g++ ${CFLAGS} -c neuroEnhet.cpp 
 c:
-	make clean; echo "\n"; make
+	 clear; make clean; echo "\n\n"; make; echo "\n\n"
 
 
 clean:

@@ -37,9 +37,6 @@ using std::endl;
 #define cDebug std::cerr
 
 
-#define REFRACTION_TIME_NEURON 2 //eller kanskje heller 1?
-
-#define TERSKEL_DEFAULT 999 
 
 
 // klasse-deklarasjoner:
@@ -294,7 +291,7 @@ class neuron {
 
 
 
-		// TODO: SKAL VÆRE PRIVATE/PROTECTED. Ikkje puclic. Her fordi eg utprøver..
+		// TODO: SKAL VÆRE PRIVATE/PROTECTED. Ikkje public. Her fordi eg utprøver..
 		static std::map<neuron*, unsigned> sNesteFyringForNeuron; 
 
 
@@ -311,8 +308,8 @@ class neuron {
 
 
 
-
-neuroParametre ATETJLJ;
+//#include "kappa_tillegg.h"
+//neuroParametre ATETJLJ;
 
 
 
