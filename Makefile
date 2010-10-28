@@ -12,7 +12,7 @@ main.o: main.cpp main.h kappa_tillegg.h
 neuroEnhet.o: neuroEnhet.cpp neuron.h neuroSensor.h synapse.h kappa_tillegg.h
 	g++ ${CFLAGS} -c neuroEnhet.cpp 
 c:
-	 clear; make clean; echo "\n\n"; make; echo "\n\n"
+	 clear; make clean; echo "\n\n"; make; echo "\n\n";
 
 
 clean:

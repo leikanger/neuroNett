@@ -40,7 +40,16 @@ using std::endl;
 
 
 // klasse-deklarasjoner:
+
+//Ustarta:
+class axon; 			// klasse for axon. Planlegger å dele opp seinare, i axon hillock og axon proper? 
+class astrocytt; 		// klasse for astrocytt. Skal gi alpha for alle neuron i dens "domain".
+//starta:
+class dendritt; 		// klasse for dendritt. En av klassene som kan ha synapser.
+
+
 class synapse; 		 	// grunnklasse for synapse. Kan brukes som den er.
+
 class neuron; 			// Hovedklasse for funksjonaliteten til neuron. Temporal leaky integrator, fyring, inneholder synapse-vektor.
 class neuroSensor; 		// NeuroSensor for å oversette tilstand til neuro-språk.
 //class arbeidsHistorieElement; // Test for å ha en form for logg. Ikkje kommet så langt. Ta bort?
@@ -54,8 +63,8 @@ extern unsigned long ulTidsiterasjoner;
 //extern list<synapse*> 		    pNesteSynapseUtregningsKoe; Flytta inn i synapse-klassa som static
 
 
-#ifndef NEUROENHET_h
-  #define NEUROENHET_h
+#ifndef NEURON_h
+  #define NEURON_h
  
   #include "synapse.h"
 
@@ -70,8 +79,10 @@ extern unsigned long ulTidsiterasjoner;
 
 class neuron {
 	private:
-		// TODO FLYTT NESTE OPP IGJEN FRA public! og lag en public getNesteFyring()
-		//static std::map<neuron*, int> sNesteFyringForNeuron; 
+		// neste fyring ved noværande kappa, alpha, t_0
+		static std::map<neuron*, unsigned> sNesteFyringForNeuron; 
+		// Hm beste måten å regne ut neste er kanskje ved å regne ut depolverdi ved ny kappa, og regne ut perioden for den
+		// 	delta kappa->tau (kor mykje kappa ligger over tau), og regne ut periode fra dette. Så ved neste omgang kjøre det for depol = 0.
 
 	protected:
 		int nVerdiForDepolarisering; 
@@ -262,7 +273,8 @@ class neuron {
 	 		//fjærner arg fra inputliste: //{
 			for( std::vector<synapse*>::iterator iter = pUtSynapser.begin(); iter != pUtSynapser.end() ; iter++ ){
 				if( *iter == syn_p_ArgTaVekk ){
-					cout<<"\ttaBortOutputSynapse(syn*): Fjærner output-syn. fra meg(" <<navn <<") -> [" <<syn_p_ArgTaVekk->pPostNode->navn <<"]\n";
+					cout 	<<"\ttaBortOutputSynapse(syn*): Fjærner output-syn. fra meg(" <<navn <<") -> [" 
+						<<syn_p_ArgTaVekk->pPostNode->navn <<"]\n";
 					(pUtSynapser).erase( iter );
 					break;
 				}
@@ -277,7 +289,7 @@ class neuron {
 	
 
 
-		neuroParametre test_neuroParamJeje;
+		neuroParametre neuroParam;
 
 
 
@@ -291,8 +303,6 @@ class neuron {
 
 
 
-		// TODO: SKAL VÆRE PRIVATE/PROTECTED. Ikkje public. Her fordi eg utprøver..
-		static std::map<neuron*, unsigned> sNesteFyringForNeuron; 
 
 
 
@@ -305,11 +315,21 @@ class neuron {
 	friend std::ostream & operator<< (std::ostream & ut, neuron neuroArg );
 };
 
+/* Dendritt:
+* 	Neuron har en eller fleire av denne klassa.
+* 	Inneheld synapser. Kanskje peiker til extracellular fluid? (bestemmer alpha for synapsa)
+* 	
+* 	Skal ha innsynapser. Skal regne ut egen K. Sender vidare. Soma regner ut sin kappa bl.a. basert på avstand til ulike dendrittane, og deira kappa.
+	  Dette er lineære kalkulasjoner, så rimelige lette operasjoner.
+* 		- skal dermed ha egen K
+*/
+class dendritt{
+	std::list<synapse> innkoblinger;
 
-
-
-//#include "kappa_tillegg.h"
-//neuroParametre ATETJLJ;
+	neuroParametre dendrittParam;
+	
+	//XXX	friend class astrocytt;
+};
 
 
 

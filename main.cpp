@@ -21,7 +21,6 @@ void* arbeidsKoeArbeider(void*);
 // Deklarasjon av statiske element
 // 	- i synapse: 
 extern list<synapse*>  		synSkilleElement::pNesteSynapseUtregningsKoe;
-//extern list<synapse*>  		synapse::p NesteSynapseSomIkkjeErFerdigOppdatert_Koe;	
 // 	- i neuron:
 extern std::map<neuron*, unsigned> 	neuron::sNesteFyringForNeuron;
 
@@ -58,6 +57,17 @@ int initArbeidskoer()
 } //}
 
 
+/* VIL FUNKE, men trøbler med ostream. Sjekk i c++Boka!
+std::ostream & groenUtskrift (std::ostream & ut, const std::string tekst)
+{
+	ut 	<<tekst <<"\n";
+/ *
+	ut 	<<"\033[0;32;40m %02s"
+		<<tekst
+		<<"%02s  \n"; */
+//	return ut;
+//}
+
 /*******************************
 ***   int main()             ***
 ***       arg:      -        ***
@@ -78,9 +88,10 @@ int main(int argc, char *argv[])
 	neuron nD("nD");
 	neuron nA("nA");
 	
+	// Lagringa av peikaren er ikkje naudsynt. Gjør det for å aksessere medlemsfunksjonane til syn. Trengs ikkje. Tas hand om i konstruktor..
+	//synapse* pTestLangrar =  // er lik peikeren lagd i new-statement under...
+	
 	new synapse (&nA, &nD);
-
-
 
 
 
@@ -88,33 +99,37 @@ int main(int argc, char *argv[])
 	// void*(void*) - funksjon. Her går kalkuleringa av listene..	
 //	arbeidsKoeArbeider(0);
 
-
-	//nA.test_neuroParamJeje.kappa = 4;
-	//cout<<"Funker: nA.test_neuroParamJeje.kappa == " <<nA.test_neuroParamJeje.kappa <<endl;
-
 	
 
-	cout<<"Skriver ut alle synapser til nokre neuron:\n";
+	cout<<"\n\n\nSkriver ut alle synapser til nokre neuron:\n";
 	cout 	<<nA <<"\n"
 		<<nD <<"\n";
-		//<<sC <<"\n";
 
-	cout<<"\n\n\n\n\nHERHERHER:\n\n";
-	nA.test_neuroParamJeje.kappa = 1000;
-	nA.test_neuroParamJeje.alpha = 0.001;
-	cout<<"nA.test_neuroParamJeje.kappa = X; utskrift av den: " <<nA.test_neuroParamJeje.kappa <<"\n\n\n\n";
+	
+	cout<<"\n\n\nGjennomgang av ulike verdier av kappa:\n\n";
+
+	for(float f = 5000; f>600; f*=0.95 ) //Tar vekk 5% av f
+	{
+		nA.neuroParam.nyKappa(f);
+		//nA.kappaParam.kalkulerPeriode();
+		cout 	<<nA.neuroParam ;
+	}
+
+	cout << "\n\t\tJEJEJEJ\n\n\n";
+
+	cout << "\n\t\tOg alpha-endring:\n\n";
+
+	nA.neuroParam.nyKappa( 3000 );
+	for(float a = 0.001; a<0.015; a*=1.12)
+	{
+	 	nA.neuroParam.nyAlpha(a);
+		cout 	<<nA.neuroParam;
+	}
 
 
 
 	cout<<"\n\t\tEitt sekunds stillhet for INGEN SEGAULT!\n\n";
 	sleep(1);
-
-	nA.test_neuroParamJeje.kalkulerPeriode();
-	cout 	<<"Meir: nA's neuroParametre: ";
-	cout 	<<nA.test_neuroParamJeje <<endl;
-	
-	cout << "\n\t\tJEJEJEJ\n\n\n";
-
 
 	return 0;
 }

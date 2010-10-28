@@ -41,21 +41,16 @@ unsigned long ulTidsiterasjoner = 0;
 
 // constructor:
 synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt /*=false*/, float vekt /*=1*/ ) : //vekt bør være i promille.
+														// 	og kanskje type int eller long.
 		bInhibitorisk_effekt(argInhibitorisk_effekt),
-		//uAntallSynapticV_sluppet(0),
 	 	fSynaptiskVekt( vekt ),
-		ulTimestampForrigeEndingAvParam( ulTidsiterasjoner ),
-		//dOppladingsFartForSynVesicles(DEF_OPPLADINGSFART_FOR_SYN_VESICLES),
+		//ulTimestampForrigeEndingAvParam( ulTidsiterasjoner ),
 		pPreNode(pPreN_arg), pPostNode(pPostN_arg)
 {
 	//{
 	pPreNode->pUtSynapser.push_back(  this );
 	pPostNode->pInnSynapser.push_back(this );
 	
-
-	//Tester. Slett:
-	//slett_vpAlleSynapeneSomErContruert.push_back( this );
-
 
 	// lag ei .oct - fil, og gjør klar for å kjøres i octave:
 	std::ostringstream tempFilAdr;
@@ -65,22 +60,11 @@ synapse::synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_ef
 	tempFilAdr<<".oct";
 
 	std::string tempStr( tempFilAdr.str() );
-
 	// trenger c-style string for open():
 	utskriftsFilLogg.open( tempStr.c_str() );
 	
 	utskriftsFilLogg<<"data=[\n";
-	
 	utskriftsFilLogg.flush();
-
-	// Logg for størrelsen av PSP-endring:
-	//std::ostringstream tempFilAdr2;
-	//tempFilAdr2<<"./datafiler_for_utskrift/effekt_av_PSP_for_syn_" <<pPreNode->navn <<"-"  <<pPostNode->navn ;
-// //	if(bInhibitorisk_effekt){ tempFilAdr2<<"_inhi"; }
-// // 	else{ 			  tempFilAdr2<<"_eksi"; }
-	//tempFilAdr2<<".m";
-
-//	tempStr = tempFilAdr2.str() ;
 
 	
 	//}
@@ -142,11 +126,6 @@ inline void synSkilleElement::aktiviserOgRegnUt()
 	// - - - - - - - - synSkilleElement flytta til slutten, igjen, alle nye jobber kommer på neste tidsteg, igjen.. - - - - - - - - - - - - - - - -
 
 
-	// Tester det: XXX
-	//neuron::sNesteFyringForNeuron[&slettA] = 999;
-	//neuron::sSkrivUt_sNesteFyringForNeuron_map();
-
-
 	/* * * * Oppdatering, etter estimert-liste * * * */
 
 	// neuron* pNeuronTemp;  	for oppdaterNeuron() under..
@@ -178,8 +157,7 @@ inline void synSkilleElement::aktiviserOgRegnUt()
 
 
 	// Sjekker om frekvens-output-sensore skal fyre.
-	/// XXX  XXX XXX XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX  XXX   Korleis blir dette neste for kappa-opplegg?
-// Kanksje eg skal ordne fyring på denne måten?
+	// Kanksje eg skal ordne fyring på denne måten?
 	/*for( list<neuroSensor*>::iterator i = pNeuroSensorListe.begin(); i != pNeuroSensorListe.end(); i++ ){
 		(*i)->sjekkOmSkalFyres_ogFyr();
 	}*/
@@ -256,10 +234,9 @@ synapse::~synapse()
 
 
 	//{ utskriftslogger
-	
-	if( ulTimestampForrigeEndingAvParam < 10 ){
+	/*if( ulTimestampForrigeEndingAvParam < 10 ){
 	 	utskriftsFilLogg <<"0 0 0 0"; // for å unngå feilmelding om tom vektor, fra octave når det skal plottes..
-	}
+	}*/
 
 	/* / no er data slik: [tid, antall, 		tomme, membran ] i synapse_likevekt..
 	utskriftsFilLogg<<"];\n"
@@ -278,6 +255,11 @@ synapse::~synapse()
 	//}
 } //}
 
+
+/*inline*/ void synapse::kalkulerKappa_ij()
+{
+	///*kappa_ij*/ parametre.kappa = fSynaptiskVekt / pPreNode->neuroParam.getPeriode();
+}
 
 
 // vim:fdm=marker:fmr=//{,//} : fdl=3

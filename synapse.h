@@ -22,6 +22,22 @@ using std::endl;
 
 
 
+
+
+/***********************************************************************
+**                                                                    **
+**    PLAN:                                                           **
+**         	- lage alpha for synapsen, ved å legge inn [extracellular spenning] utafor neuronet, og dermed "drivkrafta" for depolarisasjonen. 
+** 			-> Finn overgangen mellom [EC]-spenning og alpha. Andre mekanismer? Syn. plast.?
+** 		- Lage tidsforløp for denne. 
+** 			-> vidare lage delta(alpha)->delta(periode) -- transform. For å ha effektiv transient forløp av alpha.
+		- 
+**                                                                    **
+**                                                                    **
+**                                                                    **
+**                                                                    **
+***********************************************************************/
+
 // klasse-deklarasjoner:
 class synapse;
 class neuron;
@@ -61,71 +77,32 @@ class synapse {
 
 		float fSynaptiskVekt;
 
-
-		unsigned long ulTimestampForrigeEndingAvParam; // Her kan det være ulTimestampForrigeEndingAvParamAvAlpha_ij
-
-		//unsigned long ulTimestampForrigeEndring_eller_noke;
 		
-		
+		//float kappa_ij;
+		//float alpha_ij;
 
+		// kalkuler [synapsens bidrag på postsyn. kappa, eller kappa_ij].
+		void kalkulerKappa_ij(); 
 
-		/*********** For synaptic short-term depression: ***********/
-		
-	
-		// oppdaterSyn() :
-		// 	arg: 	void
-		// 	retur: 	?
-		// Oppdaterer alpha for synapsen. Alpha_ij er denne gange med synapsens relative innvirkning på postsynaptisk Kappa.
-		// 	dvs. K_ij / K_i
-
-		virtual int oppdaterSyn()
-		{ //{ ... }
-			//X Dersom den er kalt fra pNesteSynapseSomIkkjeErFerdigOppdatert_Koe (eller første element er denne..)
-			//X if( this == synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() ){
-			//X	// så fjærner det første element fra oppdateringsliste:
-			//X	synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
-			//X}		
-
-
-			// Sjekker om den har oppdatert denne iterasjonen: Dette er kanskje lurt også for Kappa.
-			if( ulTimestampForrigeEndingAvParam == ulTidsiterasjoner ){
-	 			cout<<"\ntimestamp for oppdatering er allerede tatt (har redan oppdatert denne iter).\n";
-	 			return 1; // eller kanskje noke anna. Bare ikkje 0 som returverdi.
-			}
-			
-
-		
-		
+		/*void kalkulerAlpha_ij()
+		   Denne er vankeligare. Avhengig av EC spenning. Eller overføringshistorikken til synapsa. FIR-filter?
+		     Avhengig av:
+		 	- neuronets depol.  (?!?) Kanskje denne effekta er neglisjerbar? Nei? .. Blir komplekse ligninger av dette..
+		 	- EC spenning.  	  Kanskje denne effekta er neglisjerbar? Aner ikkje..
+		 	- opningane i neuronets membran. => her kommer LTP/LTD inn. Meir potensiell opning etter LTP..
+			 	- 
+		*/
 		
 
-
-// Utskrift:
-//cout<<"Repro: " <<nBestilltReproduksjonAvSvFraForrigeIter <<" synth. " <<nBestilltSynteseAvSVFraForrigeIter <<"\t";
-			
-	
-
-
-
-		
-			// Oppdaterer timestamp for oppdatering av syn.
-			ulTimestampForrigeEndingAvParam = ulTidsiterasjoner;
-			
-
-			// For S.V. - logg: 	XXX lag en logg for Kappa, alpha, osv...
-			//utskriftsFilLogg<<"\t" <<ulTidsiterasjoner <<"\t" <<ulAntallSynapticVesiclesAtt <<"\t1000\t" <<"\t" 	osv....
-			//utskriftsFilLogg.flush();
-	
-			
-			return 1;
-		} //}
-			
 
 	public:
 		// Constructor for arv i synapse. Potensiellt farlig? Legger inn char, og sjekk om det er f.eks. 't'. ellers; feilmld.
 		synapse(char c) : bInhibitorisk_effekt(false) { if(c!='t'){ cDebug<<"\n\n\n\nERROR: l 264 i nexxxxxx\n\n\n"; exit(0); } } 
-		//XXX endre fra float fSynaptiskVekt til int eller unsigned eller større: long..  For effektivitet!
-		synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float vekt =1 );
 		// Denne legger seg automagisk til i postsyn. si innsyn.liste, og presyn. utsyn. liste.
+		synapse( neuron* pPreN_arg, neuron* pPostN_arg, bool argInhibitorisk_effekt =false, float vekt =0.1 );
+
+		//endre fra float fSynaptiskVekt til int eller unsigned eller større: long..  For effektivitet!
+
 
 		// Destructor, for å fjærne seg sjølv fra postsyn.inn-syn-liste, og presyn:utsyn-liste.
 		~synapse();
@@ -198,25 +175,6 @@ class synSkilleElement : public synapse {
 		// gjør heilt andre ting enn synapse. Heiter det samme pga overloading.
 		void aktiviserOgRegnUt(); // Utleda i neuroEnhet.cpp
 
-
-		// Legger seg sjølv til sist i lista, og returnerer 0 (symboliserer at liste er ferdig (det før skilleelementet) )
-/*
-		int oppdaterSyn(){ 
-			// kan være lurt å for sikkerhetsskuld ta med if(pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() == this )  - Men treigare..
-			if( synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.front() != this ){ cout<<"FEIL synapse.h_52"; exit(-1); }
-			/ * IKKJE LØYSING: feilsjekk..  * /
-
-			// legg seg til på slutt:
-			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.push_back(this);   	
-			// Fjærner dette element fra oppdateringsliste:
-			synapse::pNesteSynapseSomIkkjeErFerdigOppdatert_Koe.pop_front();   
-
-			return 0; // Signaller tilbake att dette ikkje er vanlig synapse::oppdaterSyn() (viktig for funksjonallitet til programmet)
-		}
-*/	       	/* return 0 er heile poenget med int-returverdi her. Skal ret. 0 ved synSkilleElement, og 1 ved vanlig ok
-		 * 	Dersom det er vanlig oppdatering av vanlig synapse, vil den returnere 1, her returnerer den 0, Dette gjør at eg kan kjøre
-		 * 	while( ! (kø++)->oppdaterSyn() );  // trur ikkje noke skal gjøres. Kanskje utskrift eller noke..
-		 */
 
 };
 
